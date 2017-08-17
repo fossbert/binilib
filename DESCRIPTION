@@ -1,0 +1,10 @@
+Package: binilib
+Type: Package
+Title: Carlo's little helper
+Version: 0.1.0
+Author: Carlo Maurer
+Maintainer: Carlo Maurer <h.carlo.maurer@gmail.com>
+Description: Convenience functions for getting stuff done in R.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
