@@ -11,3 +11,6 @@ mypar <- function(a = 1, b = 1, brewer.n = 9, brewer.name = "Set1",
     palette(RColorBrewer::brewer.pal(brewer.n, brewer.name))
 
 }
+
+
+## next one
