@@ -13,4 +13,3 @@ mypar <- function(a = 1, b = 1, brewer_n = 9, brewer_name = "Set1", ...) {
 
 }
 
-## next one
