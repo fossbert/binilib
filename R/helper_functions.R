@@ -1,4 +1,4 @@
-#' Extract rows or columns from a matrix with order of interest
+#' Extract rows or columns from a matrix in order of interest
 #'
 #' @param inputmat matrix with row and column names
 #' @param reflist character vector of row or column names to be extracted
@@ -67,5 +67,16 @@ collapse_multi <- function(inputmat, fac, method = c("mean", "median", "sum"), v
     return(outmat)
 }
 
+
+#' Tidyverse way to read in gene expression matrices
+#'
+#' @param df path to a tab-separated dataframe whose first column includes gene identifiers
+#' @return Data matrix ready to play
+read_matrix <- function(df) {
+        tmp <- readr::read_tsv(df)
+        emat <- data.matrix(tmp[-1])
+        rownames(emat) <- tmp[[1]]
+        return(emat)
+}
 
 
