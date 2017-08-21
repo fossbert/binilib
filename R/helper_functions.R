@@ -1,12 +1,12 @@
 #' Extract rows or columns from a matrix in order of interest
 #'
-#' @param inputmat matrix with row and column names
+#' @param expmat matrix with row and column names
 #' @param reflist character vector of row or column names to be extracted
 #' @param margin where to look for the reflist, by default rows
 #' @return new matrix with rows or columns in order of the reference list
-extract_features <- function(inputmat, reflist, margin = 1) {
+extract_features <- function(expmat, reflist, margin = 1) {
 
-    mat <- as.matrix(inputmat)
+    mat <- as.matrix(expmat)
 
     if (margin == 1) {
         tmp <- which(reflist %in% rownames(mat))
@@ -31,17 +31,17 @@ extract_features <- function(inputmat, reflist, margin = 1) {
 
 #' Collapsing many-to-one relationships for gene expression matrices
 #'
-#' @param inputmat matrix whose rows can partly be summarized using a factor
+#' @param expmat matrix whose rows can partly be summarized using a factor
 #' @param fac factor used for summarizing rows
 #' @param method method of summary, defaults to mean
 #' @param verbose whether to inform user regarding progress
 #' @return new matrix with rows or columns in order of the reference list
 
-collapse_multi <- function(inputmat, fac, method = c("mean", "median", "sum"), verbose = TRUE) {
+collapse_multi <- function(expmat, fac, method = c("mean", "median", "sum"), verbose = TRUE) {
 
     method <- match.arg(method)
     # ensure appropriate data types
-    mat <- as.matrix(mat)
+    mat <- as.matrix(expmat)
     fac <- as.factor(fac)
 
     outmat <- matrix(nrow = length(levels(fac)), ncol = ncol(mat),
@@ -67,6 +67,31 @@ collapse_multi <- function(inputmat, fac, method = c("mean", "median", "sum"), v
     return(outmat)
 }
 
+#' Finding the most variable features of a matrix
+#'
+#' @param expmat numerical matrix, typically a gene expression matrix
+#' @param n number of most variable features to be returned, default 2000
+#' @param method method to determine 'variable', defaults to robust measure (mad)
+#' @param center whether to median center the resulting matrix, defaults to FALSE
+#' @return new matrix with most variable genes
+find_var_genes <- function(expmat, n = 2000, method = c("mad","sd"), center = FALSE) {
+
+    mat <- as.matrix(expmat)
+    method <- match.arg(method)
+    switch(method,
+           mad={spread <- apply(mat, 1, mad)},
+           sd={spread <- apply(mat, 1, sd)}
+           )
+
+    # Subset Matrix to top variable genes and center
+    vmat <- mat[order(spread, decreasing = TRUE)[1:n], ]
+    if (isTRUE(center)) {
+        vmat <- sweep(vmat, 1, apply(vmat, 1, median, na.rm = TRUE))
+    }
+    return(vmat)
+}
+
+
 
 #' Tidyverse way to read in gene expression matrices
 #'
@@ -78,5 +103,8 @@ read_matrix <- function(df) {
         rownames(emat) <- tmp[[1]]
         return(emat)
 }
+
+
+
 
 
