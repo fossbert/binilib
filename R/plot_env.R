@@ -10,6 +10,6 @@ mypar <- function(a = 1, b = 1, brewer_n = 9, brewer_name = "Set1", ...) {
 
     par(mfrow = c(a, b), ...)
     palette(RColorBrewer::brewer.pal(brewer_n, brewer_name))
-
+    theme_set(theme_bw(base_size = 10))
 }
 

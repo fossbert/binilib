@@ -8,7 +8,5 @@ Description: Convenience functions for getting stuff done in R.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Imports:
-    tidyverse,
-    magrittr,
+Depends: tidyverse
 RoxygenNote: 6.0.1

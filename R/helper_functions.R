@@ -83,7 +83,6 @@ find_var_genes <- function(expmat, n = 2000, method = c("mad","sd"), center = FA
            sd={spread <- apply(mat, 1, sd)}
            )
 
-    # Subset Matrix to top variable genes and center
     vmat <- mat[order(spread, decreasing = TRUE)[1:n], ]
     if (isTRUE(center)) {
         vmat <- sweep(vmat, 1, apply(vmat, 1, median, na.rm = TRUE))
@@ -104,7 +103,24 @@ read_matrix <- function(df) {
         return(emat)
 }
 
+#' Calculate row-wise Welch’s t-statistic
+#'
+#' @param expmat numerical matrix, typically a gene expression matrix
+#' @param classes integer vector indicating class assignment (0 or 1)
+#' @return numeric vector with Welch's t-statistics for each row
 
+rowTstat <- function(expmat, classes){
 
-
-
+            X0 <- expmat[, classes == 0]
+            X1 <- expmat[, classes == 1]
+            m0 <- rowMeans(X0)
+            m1 <- rowMeans(X1)
+            n0 <- sum(classes == 0)
+            n1 <- sum(classes)
+            sq <- function(x) x * x
+            s0 <- rowSums(sq(X0 - m0))
+            s0 <- s0 / (n0 * (n0 - 1))
+            s1 <- rowSums(sq(X1 - m1))
+            s1 <- s1 / (n1 * (n1 - 1))
+            (m0 - m1) / sqrt(s0 + s1)
+}
