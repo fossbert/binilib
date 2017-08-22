@@ -4,6 +4,7 @@
 #' @param reflist character vector of row or column names to be extracted
 #' @param margin where to look for the reflist, by default rows
 #' @return new matrix with rows or columns in order of the reference list
+#' @export
 extract_features <- function(expmat, reflist, margin = 1) {
 
     mat <- as.matrix(expmat)
@@ -36,6 +37,7 @@ extract_features <- function(expmat, reflist, margin = 1) {
 #' @param method method of summary, defaults to mean
 #' @param verbose whether to inform user regarding progress
 #' @return new matrix with rows or columns in order of the reference list
+#' @export
 
 collapse_multi <- function(expmat, fac, method = c("mean", "median", "sum"), verbose = TRUE) {
 
@@ -74,6 +76,8 @@ collapse_multi <- function(expmat, fac, method = c("mean", "median", "sum"), ver
 #' @param method method to determine 'variable', defaults to robust measure (mad)
 #' @param center whether to median center the resulting matrix, defaults to FALSE
 #' @return new matrix with most variable genes
+#' @export
+
 find_var_genes <- function(expmat, n = 2000, method = c("mad","sd"), center = FALSE) {
 
     mat <- as.matrix(expmat)
@@ -96,6 +100,7 @@ find_var_genes <- function(expmat, n = 2000, method = c("mad","sd"), center = FA
 #'
 #' @param df path to a tab-separated dataframe whose first column includes gene identifiers
 #' @return Data matrix ready to play
+#' @export
 read_matrix <- function(df) {
         tmp <- readr::read_tsv(df)
         emat <- data.matrix(tmp[-1])
@@ -108,6 +113,7 @@ read_matrix <- function(df) {
 #' @param expmat numerical matrix, typically a gene expression matrix
 #' @param classes integer vector indicating class assignment (0 or 1)
 #' @return numeric vector with Welch's t-statistics for each row
+#' @export
 
 rowTstat <- function(expmat, classes){
 
