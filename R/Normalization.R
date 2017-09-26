@@ -43,18 +43,28 @@ tpm <- function(counts, log = TRUE, offset = 0.25, type = c('Symbol', 'Entrez'),
 #' @return basic rank normalized matrix.
 #' @export
 
-basic_rank_norm <- function(counts, tpm = TRUE, gausstrans = FALSE) {
-
+basic_rank_norm <- function(counts, tpm = TRUE) {
 
     if (tpm) d1 <- tpm(counts, log = FALSE) else d1 <- counts
-    # rank transform and distributes between -1 and 1
-    # first for samples
-    d1 <- apply(d1, 2, rank)/(nrow(d1)+1)*2-1
-    # then for genes
-    d2 <- t(apply(d1, 1, rank)/(ncol(d1) +1)*2-1)
 
-    if (gausstrans) d2 <- qnorm(d2/2+.5)
-
+    # rank transform each sample/column
+    d1 <- t(t(apply(d1, 2, rank, na.last="keep"))/(colSums(!is.na(counts))+1))
+    rm(counts)
+    gc()
+    # rank transform each gene/row
+    d2 <- t(apply(d1, 1, rank, na.last="keep"))/(rowSums(!is.na(d1))+1)
+    rownames(d2) <- rownames(d1)
     return(d2)
+    # rank transform and distributes between -1 and 1
+    # first for columns
+    #d1 <- apply(d1, 2, rank)/(nrow(d1) + 1)*2-1
+    # then for genes
+    #d2 <- t(apply(d1, 1, rank)/(ncol(d1) + 1)*2-1)
+
+    # possibly transform
+    # if (gausstrans) d2 <- qnorm(d2/2+.5)
 
 }
+
+
+
