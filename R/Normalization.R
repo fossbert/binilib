@@ -4,19 +4,25 @@
 #'
 #' This function computes tpm for human exonic read counts
 #'
-#' @param counts Numeric matrix of raw read counts per gene
+#' @param counts Numeric matrix of \strong{human} raw read counts per gene
 #' @param log Logical, whether the data should be log2 transformed
 #' @param offset Number to offset zero values when applying log transformation
+#' @param type Character to indicate the gene identifier, defaults to gene symbol
+#' @param species Character to indicate the genes' species origin, defaults to human
 #' @return Numeric matrix of TPM data
 #' @export
-tpm <- function(counts, log = TRUE, offset = 0.25, type = c('Symbol', 'Entrez'), filterZero = TRUE) {
+tpm <- function(counts, log = TRUE, offset = 0.25,
+                type = c('Symbol', 'Entrez'),
+                species = c('Human', 'Mouse'),
+                filterZero = TRUE) {
 
     if (filterZero) d1 <- counts[rowSums(counts) > 0, ] else d1 <- counts
     type <- match.arg(type, choices = c('Symbol', 'Entrez'))
+    species <- match.arg(species, choices = c('Human', 'Mouse'))
 
     # retrieve information on gene lengths, gene symbols and entrez ids
     data("geneLengths")
-    glen <- geneLengths[[type]]
+    glen <- geneLengths[[species]][[type]]
 
     # match up
     common <- intersect(names(glen), rownames(d1))
@@ -39,7 +45,7 @@ tpm <- function(counts, log = TRUE, offset = 0.25, type = c('Symbol', 'Entrez'),
 #' Basic rank normalization of a gene expression matrix
 #'
 #' @param counts Matrix containing raw read counts (generally).
-#' @param gausstrans whether or not the ranks should be transformed using a gaussian.
+#' @param tpm logical, adjust for gene length before rank transformation
 #' @return basic rank normalized matrix.
 #' @export
 
