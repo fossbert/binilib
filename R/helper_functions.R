@@ -53,7 +53,7 @@ collapse_multi <- function(expmat, fac, method = c("mean", "median", "sum"), ver
     if (verbose) {
         message("\nCollapsing mutiple probes/IDs using their ", method, " for ", ncol(mat), " samples.")
         message("\nProcess started at ", date())
-        pb <- txtProgressBar(max=ncol(mat), style = 3)
+        pb <- txtProgressBar(max = ncol(mat), style = 3)
     }
 
     # message methods of collapsing, number of samples and date
@@ -107,34 +107,94 @@ read_matrix <- function(df) {
         return(emat)
 }
 
-#' Extract the top up and down regulated MR per sample
+#' Convenience function for writing gene expression to file
 #'
-#' @param vipres numeric matrix with results from VIPER
-#' @param nn integer of number of top MR to consider
-#' @param direction character, which tail should be returned, defaults to both up and down
-#' @return list object with top dysregulated MR per sample
+#' @param eset Numeric gene expression matrix with gene identifiers as row names
+#' @param path character string indicating path and name of file
+#' @export
+write_matrix <- function(eset, path) {
+
+    tmp <- tibble::rownames_to_column(data.frame(eset), var = 'Gene')
+
+    readr::write_tsv(tmp, path = path)
+}
+
+#' lapply function to apply functions in a pair-wise manner between all distinct elements of a list
+#'
+#' @param x list
+#' @param f the function to be applied between each pair of elements of the list. Function needs to take two arguments: i and j.
+#' @return list object with the results
+#' @export
+#' @examples
+#' lapply_pair(x = l, f = function(i, j) diag(cor(i, j)))
+#' This call will return the column-wise Pearson correlation between each pair
+
+lapply_pair <- function(x, f, ...) {
+
+    if (is.null(names(x))) nom <- paste('Element', 1:length(x), sep = '_') else nom <- names(x)
+    out <- vector("list", length(x))
+    names(out) <- nom
+
+    for (i in seq_along(x)) {
+
+        for(j in seq_along(x)) {
+            if (i == j) next
+            id <- names(x)[[j]]
+            out[[i]][[id]] <- f(x[[i]], x[[j]], ...)
+        }
+
+    }
+    out
+}
+
+
+#' randomize_eset
+#'
+#' randomize columns or rows, respectively of a matrix
+#'
+#' @param eset Numeric matrix with row and column names
+#' @param seed integer, defaults to 1
+#' @param margin where to randomize, defaults to columns
+#' @param ... Further arguments passed to apply
+#' @return new matrix with randomized columns or rows, respectively
 #' @export
 
-topMR <- function(vipres, nn = 25, direction = c('both', 'up', 'down')) {
+randomize_eset <- function(eset, seed = 1, margin = 2, ...) {
+         set.seed(1)
 
-    dir <- match.arg(direction)
+        if (margin == 2) {
 
-    switch(dir,
-           both = {idx <- c(1:nn, (nrow(vipres)-(nn-1)):nrow(vipres))
-                    tfm <- rep(c(1,-1), each = nn) },
-           up = {idx <- 1:nn
-                    tfm <- rep(1, nn)},
-           down = {idx <- (nrow(vipres)-(nn-1)):nrow(vipres)
-                    tfm <- rep(-1, nn)}
-           )
+            if (!is.null(rownames(eset))) nom <- rownames(eset)
+            tmp <- apply(eset, margin, function(i, ...) sample(i, size = length(i), ...), ...)
+            if (!is.null(rownames(eset))) rownames(tmp) <- nom
 
-        tmp <- apply(vipres, 2, function(i) {
-            names(tfm) <- rownames(vipres[order(i, decreasing = TRUE), ])[idx]
-            list(tfmode = tfm, likelihood = unname(abs(tfm)/nn))
-        })
+        } else {
 
-        class(tmp) <- 'regulon'
-        return(tmp)
+            if (!is.null(colnames(eset))) nom <- colnames(eset)
+            tmp <- t(apply(eset, margin, function(i, ...) sample(i, size = length(i), ...), ...))
+            if (!is.null(colnames(eset))) colnames(tmp) <- nom
+        }
+       tmp
+    }
+
+
+#' Replace missing values (typically in a vector or matrix)
+#'
+#' @param x Vector (or matrix) with NA values somewhere
+#' @param replacement Defaults to zero for numeric data, but can be anything really
+#' @return new matrix with randomized columns or rows, respectively
+#' @export
+
+replace_missings <- function(x, replacement = 0) {
+
+    if(!identical(class(x), class(replacement))) {
+        warning('Classes of input and replacement do not match!')
+    }
+    is_miss <- is.na(x)
+    x[is_miss] <- replacement
+    message(sum(is_miss), ' missing value(s) replaced by the value ', replacement)
+    x
+
 }
 
 

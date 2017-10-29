@@ -72,5 +72,17 @@ basic_rank_norm <- function(counts, tpm = TRUE) {
 
 }
 
+#' Rescale a numeric vector to range between 0 and 1
+#'
+#' @param x a numeric vector
+#' @param na_rm logical, whether to remove NA values in call to range (TRUE)
+#' @return rescaled numeric vector (minimum is 0, maximum is 1)
+#' @export
 
+rescale01 <- function(x, na_rm = TRUE){
 
+        x <- as.numeric(x)
+
+        rng <- range(x, na.rm = na_rm)
+        (x - rng[1])/(rng[2] - rng[1])
+}
