@@ -29,5 +29,21 @@ vpres2regulon <- function(vpres, nn = 25, direction = c('both', 'up', 'down'), m
     return(tmp)
 }
 
+#' transform a regulon object to a data frame / tibble
+#'
+#' @param reg regulon object - see output of viper::aracne2regulon
+#' @return a tibble with targets and metrics (MOR/likelihood)
+#' @export
+
+reg2tibble <- function(reg) {
+
+        tibble(source = rep(names(reg), purrr::map_int(reg, ~ length(.$tfmode))),
+               target = unlist(purrr::map(reg, ~ names(.$tfmode)), use.names = FALSE),
+               mor = unlist(purrr::map(reg, ~ .$tfmode), use.names=FALSE),
+               likelihood = unlist(purrr::map(reg, ~ .$likelihood), use.names=FALSE)
+               ) %>%
+            dplyr::arrange(source, target, mor)
+
+}
 
 
