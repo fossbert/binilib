@@ -56,3 +56,20 @@ NULL
 #' }
 #'
 NULL
+
+
+#' Collection of regulon objects
+#'
+#' @name regulons
+#' @docType data
+#' @author HCM
+#' @keywords data
+#' @format List with five elements containing gene symbols for the following categories
+#' \describe{
+#' \item{epiCUMC}{ARACNe network, mRNA expression from epithelial LCM-RNA-Seq CUMC cohort}
+#' \item{ChEA}{Protein-DNA network from the ChEA database (version 2015)}
+#' \item{StringDb}{Protein-protein interactions with high confidence (StringDb score > 700)}
+#' \item{PrePPi}{Protein-protein interactions with high confidence (PrePPi score > 2400)}
+#' }
+#'
+NULL
