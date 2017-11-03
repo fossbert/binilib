@@ -9,5 +9,5 @@ Encoding: UTF-8
 LazyData: true
 License: CC0
 RoxygenNote: 6.0.1
-Depends: magrittr, tidyverse
+Depends: tidyverse
 Imports: methods, RColorBrewer
