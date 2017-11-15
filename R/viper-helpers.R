@@ -64,6 +64,7 @@ reg2tibble <- function(reg, annotate = TRUE) {
 #' @param ref normalized gene expression matrix with reference samples
 #' @param per integer, number of overall permutations
 #' @param keep_all logical, whether to return signature for all samples (incl. reference samples)
+#' @param verbose logical, whether to report on progress or not
 #' @export
 
 vpsig_limma <- function(eset, ref, per = 1000, keep_all = FALSE, seed = 42, verbose = TRUE) {
