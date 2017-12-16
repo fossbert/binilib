@@ -11,7 +11,9 @@ mypar <- function(a = 1, b = 1, brewer_n = 9, brewer_name = "Set1", ...) {
 
     graphics::par(mfrow = c(a, b), ...)
     grDevices::palette(RColorBrewer::brewer.pal(brewer_n, brewer_name))
-    ggplot2::theme_set(ggplot2::theme_bw(base_size = 10))
+    tmp <- ggplot2::theme_bw() + ggplot2::theme(axis.text = element_text(colour = 'black', size = 10))
+    ggplot2::theme_set(tmp)
+
 }
 
 #' Plot quantiles per column for a numeric matrix
@@ -88,3 +90,6 @@ legend_col <- function(col, level, side = 4){
     axis(side = side, las = 2, tick = FALSE, line = .25)
     par <- opar
 }
+
+
+

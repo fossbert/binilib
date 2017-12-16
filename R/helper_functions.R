@@ -197,4 +197,13 @@ replace_missings <- function(x, replacement = 0) {
 
 }
 
-
+#' PCA and with covariates
+#'
+#' Quickly explore whether categorical covariates are associated with major sources
+#' of variance in the expression data.
+#'
+#' @param expmat matrix with row and column names
+#' @param reflist character vector of row or column names to be extracted
+#' @param margin where to look for the reflist, by default rows
+#' @return new matrix with rows or columns in order of the reference list
+#' @export

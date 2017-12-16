@@ -86,3 +86,30 @@ rescale01 <- function(x, na_rm = TRUE){
         rng <- range(x, na.rm = na_rm)
         (x - rng[1])/(rng[2] - rng[1])
 }
+
+
+#' basic_signature
+#'
+#' This function prepares a gene expression matrix before metaVIPER. After rank
+#' normalization of each sample, the row medians are subtracted and every column
+#' is divided by the row median absolute deviation (MAD). It will filter out genes with a mad
+#' of zero.
+#'
+#' @param eset Numeric matrix of gene expression (raw counts or pre-processed)
+#' @param tpm logical, whether tpm normalization should be carried out (use if eset is in raw counts)
+#' @param ... further arguments to tpm function
+#' @return Numeric matrix with a basic signature for each sample
+#' @export
+#'
+basic_signature <- function(eset, tpm = FALSE, ...){
+
+    if(tpm) eset <- tpm(eset, ...)
+
+    rmad <- apply(eset, 1, mad)
+    keep <- rmad > 0
+
+    rank <- apply(eset[keep, ], 2, rank)
+    rmed <- apply(eset[keep, ], 1, median)
+
+    return(((rank - rmed)/rmad[keep]))
+}
