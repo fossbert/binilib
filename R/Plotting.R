@@ -35,7 +35,7 @@ kaboxplot <- function(eset,
     qs <- t(apply(eset, 2, quantile, probs = quants, na.rm = TRUE))
     info <- colMeans(qs)
 
-    oldpar <- par()$mar
+    oldmar <- par()$mar
     par(mar = rep(4.1, 4), las = 1)
     matplot(qs,
             type = "l",
@@ -45,7 +45,7 @@ kaboxplot <- function(eset,
             xlab = xlab,
             ...)
     axis(side = 4, at = info, labels = names(info)) # info on quantiles
-    par(mar = oldpar, las = 0)
+    par(mar = oldmar, las = 0)
 }
 
 

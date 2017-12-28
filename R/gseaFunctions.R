@@ -1,4 +1,4 @@
-#' This function performs Gene Set Enrichment Analysis as described by Subramanian et al.
+#' This function performs one-tailed Gene Set Enrichment Analysis as described by Subramanian et al.
 #'
 #' @param signature Named vector of gene-level statistics (preferably t-statistics)
 #' @param gS Gene set of interest
@@ -16,7 +16,7 @@
 #' \item{ledge_index}{indices of the leading edge genes in the signature}
 #' }
 #' @export
-gsea_one <- function(signature,
+gsea1T <- function(signature,
                      gS,
                      weight = 1,
                      sorting = c('decreasing', 'increasing'),
@@ -24,11 +24,16 @@ gsea_one <- function(signature,
 
                 # sorting type
                 sort_type <- match.arg(arg = sorting, choices = c('decreasing', 'increasing'))
-                switch(
+
+                switch(sort_type,
                     decreasing = {signature <- sort(signature, decreasing = TRUE)},
                     increasing = {signature <- sort(signature)}
                     )
 
+                # little safety net
+                if(!any(gS %in% names(signature))) stop('Gene set names could not be found in signature!')
+
+                # GSEA Subramanian style
                 idx <- which(names(signature) %in% gS) # positions
                 Nr <- sum(abs(signature[idx])^weight) # normalization factor
                 Nh <- length(signature) - length(idx) # non-hits
@@ -38,7 +43,7 @@ gsea_one <- function(signature,
                 maxabs <- which.max(abs(rs))
                 es <- rs[maxabs]
 
-                if(onlyES) es
+                if(onlyES) es # for null model calculation
 
                 else {
 
@@ -66,7 +71,6 @@ gsea_one <- function(signature,
                 class(gsea1) <- "gsea1"
                 return(gsea1)
                 }
-
     }
 
 #' Calculating a null distribution of enrichment scores
@@ -93,7 +97,7 @@ gsea_null <- function(signature,
 
         set.seed(seed)
 
-        # set up
+        # set up permutations
         null_list <- lapply(1:perm, function(i, signature){
                 tmp <- signature
                 names(tmp) <- sample(names(signature))
@@ -102,19 +106,20 @@ gsea_null <- function(signature,
 
         # message date and what's going on
         if (verbose) {
-            message("\nCalculating null distribution of enrichment scores by gene shuffling. Started at ", date())
+            message("\nCalculating null distribution of enrichment scores by gene shuffling.\nStarted at ", date())
             pb <- txtProgressBar(max = length(null_list), style = 3)
         } else pb <- NULL
 
+        # loop through permutations and calculate enrichment scores
         null_es <- vapply(seq_along(null_list), function(i, gS, w){
 
             if (!is.null(pb)) setTxtProgressBar(pb, i)
 
-            gsea_one(signature = null_list[[i]], gS = gS, weight = w, onlyES = TRUE)
+            gsea1T(signature = null_list[[i]], gS = gS, weight = w, onlyES = TRUE)
 
         }, FUN.VALUE = numeric(1), gS = gS, w = w)
 
-        if(plot_hist) graphics::hist(null_es, breaks = perm/10, main = '')
+        if(plot_hist) graphics::hist(null_es, breaks = perm/10, main = '', xlab = 'Enrichment Score')
 
         gsea_null <- list(null_es = null_es,
                           pos_null_es = mean(null_es[null_es >= 0]),
@@ -133,19 +138,29 @@ gsea_null <- function(signature,
 #' \item{tfmode}{named numeric vector of the mode of regulation (MOR) values}
 #' \item{likelihood}{numeric vector of interaction confidence values (based on mutual information)}
 #' }
+#' @param sorting character indicating how to sort the signature (default is decreasing). Passed to gsea1T.
 #' @param w weight for each gene-level statistic (default = 1)
 #' @return a list object containing for each gene set:
 #' \describe{
-#' \item{ES}{enrichment score}
-#' \item{RS}{running sum}
 #' \item{signature}{input signature}
-#' \item{es_idx}{index of the enrichment score}
-#' \item{gs_idx}{indices of the gene set members in the signature}
-#' \item{ledge}{gene identifiers of the genes in the leading edge}
-#' \item{ledge_idx}{indices of the leading edge gene set members}
+#' \item{ES_pos}{enrichment score positive targets}
+#' \item{ES_neg}{enrichment score negative targets}
+#' \item{ES_pos_idx}{enrichment score positive targets index}
+#' \item{ES_neg_idx}{enrichment score negative targets index}
+#' \item{RS_pos}{running sum for positive targets}
+#' \item{RS_neg}{running sum for negative targets}
+#' \item{gs_idx_pos}{indices of the positive targets in the signature}
+#' \item{gs_idx_neg}{indices of the negative targets in the signature}
+#' \item{ledge_pos}{gene identifiers of the leading edge for the positive targets}
+#' \item{ledge_neg}{gene identifiers of the leading edge for the negative targets}
+#' \item{ledge_idx_pos}{indices of the leading edge gene set members - positive targets}
+#' \item{ledge_idx_neg}{indices of the leading edge gene set members - negative targets}
 #' }
 #' @export
-gsea_regulon <- function(signature, regulon, weight = 1){
+gsea_regulon <- function(signature,
+                         regulon,
+                         sorting = c('decreasing', 'increasing'),
+                         weight = 1){
 
     # first isolate the two parts of the regulon
     tfmode <- regulon[[1]]
@@ -155,9 +170,11 @@ gsea_regulon <- function(signature, regulon, weight = 1){
     # little safety net
     if(!any(names(tfmode) %in% names(signature))) stop('Gene set names could not be found in signature!')
 
+    # sorting type
+    sort_type <- match.arg(arg = sorting, choices = c('decreasing', 'increasing'))
     # run gsea for each part of the regulon
-    pos_gsea <- gsea_one(signature, pos_targ, weight = weight)
-    neg_gsea <- gsea_one(signature, neg_targ, weight = weight)
+    pos_gsea <- gsea1T(signature, pos_targ, sorting = sort_type, weight = weight)
+    neg_gsea <- gsea1T(signature, neg_targ, sorting = sort_type, weight = weight)
 
     gsea.obj <- list(
         signature = pos_gsea$signature, # original signature
@@ -174,32 +191,190 @@ gsea_regulon <- function(signature, regulon, weight = 1){
 }
 
 
+#' This function performs GSEA of two gene sets for a given signature
+#'
+#' Similar to \code{gsea_regulon} but without any information on Mode of Regulation
+#'
+#' @param signature Named vector of gene-level statistics (preferably t-statistics)
+#' @param set1 character vector, i.e. the first gene set
+#' @param set2 character vector, i.e. the second gene set
+#' @param sorting character indicating how to sort the signature (default is decreasing). Passed to gsea1T.
+#' @param w weight for each gene-level statistic (default = 1)
+#' @return a list object containing for each gene set:
+#' \describe{
+#' \item{signature}{input signature}
+#' \item{ES_pos}{enrichment score set1}
+#' \item{ES_neg}{enrichment score set2}
+#' \item{ES_pos_idx}{enrichment score set1 index}
+#' \item{ES_neg_idx}{enrichment score set2 index}
+#' \item{RS_pos}{running sum for set1}
+#' \item{RS_neg}{running sum for set2}
+#' \item{gs_idx_pos}{indices of the set1 genes in the signature}
+#' \item{gs_idx_neg}{indices of the set2 genes in the signature}
+#' \item{ledge_pos}{gene identifiers of the leading edge for set1}
+#' \item{ledge_neg}{gene identifiers of the leading edge for set2}
+#' \item{ledge_idx_pos}{indices of the leading edge gene set members - set1}
+#' \item{ledge_idx_neg}{indices of the leading edge gene set members - set2}
+#' }
+#' @export
+gsea2T <- function(signature,
+                   set1,
+                   set2,
+                   sorting = c('decreasing', 'increasing'),
+                   weight = 1){
+
+    # little safety net
+    if(!any(c(set1, set2) %in% names(signature))) stop('Gene set names could not be found in signature!')
+
+    # sorting type
+    sort_type <- match.arg(arg = sorting, choices = c('decreasing', 'increasing'))
+
+    # run gsea for each of the gene sets
+    set1_gsea <- gsea1T(signature, set1, sorting = sort_type, weight = weight)
+    set2_gsea <- gsea1T(signature, set2, sorting = sort_type, weight = weight)
+
+    # return time ! For convenience, list names are similar to gsea_regulon, although "positive"
+    # and "negative" don't make too much sense
+    gsea.obj <- list(
+        signature = set1_gsea$signature, # original signature
+        ES_pos = set1_gsea$ES, ES_neg = set2_gsea$ES, # enrichment scores
+        ES_pos_idx = set1_gsea$es_idx, ES_neg_idx = set2_gsea$es_idx, # index of enrichment scores
+        RS_pos = set1_gsea$RS, RS_neg = set2_gsea$RS, # running sum for each gene set
+        gs_idx_pos = set1_gsea$gs_idx, gs_idx_neg = set2_gsea$gs_idx, # indices for gene sets in signature
+        ledge_pos = set1_gsea$ledge, ledge_neg = set2_gsea$ledge, # leading edges
+        ledge_idx_pos = set1_gsea$ledge_index, ledge_idx_neg = set2_gsea$ledge_index # leading edge positions in signature
+    )
+
+    class(gsea.obj) <- "gsea2"
+    return(gsea.obj)
+}
+
+#' Plot results from a one-tailed GSEA
+#'
+#' This function generates a plot
+#'
+#' @param gsea1 gsea1 object as returned from \code{gsea1T}
+#' @param color character or integer indicating color choice (defaults to cornflowerblue)
+#' @param main Character vector given as argument for convenience
+#' @param signatureNames Character vector indicating the conditions being compared. Defaults to NULL. Otherwise a charater vector of length two.
+#' @param ... Given for compatibility to the plot generic function
+#' @return Nothing, a plot is generated in the default output device
+#' @method plot gsea1
+#' @export
+plot.gsea1 <- function(gsea1,
+                       color = 'cornflowerblue',
+                       main = '',
+                       plotSignature = FALSE,
+                       signatureNames = NULL,
+                       ...) {
+
+    omar <- par()$mar
+    omgp <- par()$mgp
+
+    if(plotSignature){
+        layout(rbind(1,2),heights=c(1,3))
+        x <- seq(gsea1$signature)
+        y <- gsea1$signature
+        par(mar = c(0, 3.1, 0.1, 1), mgp = c(2, .7, 0))
+        plot(x, y,
+             type = "n",
+             xaxt = 'n',
+             xlab = '',
+             ylab = 'signature score',
+             las = 1)
+        sigsort <- as.character(sign(y[1]))
+        switch(sigsort,
+               '-1' = {
+                   polygon(c(min(x), x[y <= 0]), c(0, y[y <= 0]), border = NA, col = "gray80") ;
+                   polygon(c(max(x), x[y > 0]), c(0, y[y > 0]), border = NA, col = "gray80")
+                   if(!is.null(signatureNames)) {
+                       text(min(x), max(y)/5, label = signatureNames[1], pos = 4)
+                       text(max(x), min(y)/5, label = signatureNames[2], pos = 2)
+                       }
+                   },
+               '1' = {
+                   polygon(c(min(x), x[y > 0]), c(0, y[y > 0]), border = NA, col = "gray80")
+                   polygon(c(max(x), x[y <= 0]), c(0, y[y <= 0]), border = NA, col = "gray80")
+                   if(!is.null(signatureNames)) {
+                   text(min(x), min(y)/5, label = signatureNames[1], pos = 4)
+                   text(max(x), max(y)/5, label = signatureNames[2], pos = 2)
+                        }
+                   })
+        abline(h = 0, lty = 2, lwd = 2)
+    }
+
+    # getting acquainted
+    ylims <- (round(abs(gsea1$ES), 1) + 0.2) * c(-1, 1)
+    xax_itvl <- seq_len(floor(length(gsea1$signature)/2000))*2000
+    xax_lbls <- if(!plotSignature && !is.null(signatureNames)) {
+        c(signatureNames[1], xax_itvl[1:(length(xax_itvl)-1)], signatureNames[2])
+    } else c(1, xax_itvl)
+
+    # plot barcode plot always on top
+    boxlim <-  c(max(ylims)-0.1, max(ylims))
+    par(mar = c(4.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
+    plot(gsea1$RS, col = color, las = 1, lwd = 2,
+         ylim = ylims,
+         type = 'l',
+         xaxt = 'n',
+         xlab = 'Gene signature index',
+         ylab = 'ES',
+         main = main,
+         ...)
+    axis(side = 1, at = c(1, xax_itvl), labels = xax_lbls)
+    abline(h = 0, lty = 2)
+    for(i in 1:length(gsea1$gs_idx)){
+        lines(x = rep(seq_along(gsea1$signature)[gsea1$gs_idx[i]], 2), y = boxlim, col = color, lwd = .5)
+    }
+    rect(xleft = 0, ybottom = boxlim[1], xright = length(gsea1$signature), ytop = boxlim[2])
+    par(mar = omar, mgp = omgp, las = 0) # restore old settings
+}
+
+
+
 #' Plot results from a GSEA using a set of negative and positive targets of a regulatory gene
 #'
 #' This function generates a plot
 #'
-#' @param gsea2 gsea2 object as returned from \code{gsea_regulon}
+#' @param gsea2 gsea2 object as returned from \code{gsea_regulon} or \code{gsea2T}
 #' @param color Vector of two components indicating the colors for the negative and positive parts of the regulon
+#' @param legend Logical on whether to draw a legend explaining the two parts of the regulon
+#' @param main Character vector given as argument for convenience
+#' @param signatureNames Character vector indicating the conditions being compared. Defaults to NULL. Otherwise a charater vector of length two.
 #' @param ... Given for compatibility to the plot generic function
 #' @return Nothing, a plot is generated in the default output device
 #' @method plot gsea2
 #' @export
-plot.gsea2 <- function(gsea2, color=c("cornflowerblue","salmon"), ...) {
+plot.gsea2 <- function(gsea2,
+                       color = c("cornflowerblue","salmon"),
+                       legend = TRUE,
+                       main = '',
+                       signatureNames = NULL,
+                       ...) {
+
+    omar <- par()$mar
+    omgp <- par()$mgp
 
     # getting acquainted
-    ylims <- (abs(round(max(c(gsea2$ES_pos, gsea2$ES_neg)), 1)) + 0.2)*c(-1, 1)
+    ylims <- (round(max(abs(c(gsea2$ES_pos, gsea2$ES_neg))), 1) + 0.2)*c(-1, 1)
+    xax_itvl <- seq_len(floor(length(gsea2$signature)/2000))*2000
+    xax_lbls <- if(!is.null(signatureNames)) {
+        c(signatureNames[1], xax_itvl[1:(length(xax_itvl)-1)], signatureNames[2])
+    } else c(1, xax_itvl)
 
     # negative targets
     boxlim <-  c(max(ylims)-0.1, max(ylims))*sign(gsea2$ES_neg)
+    par(mar = c(4.1,3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
     plot(gsea2$RS_neg, col = color[1], las = 1, lwd = 2,
          ylim = ylims,
          type = 'l',
          xaxt = 'n',
          xlab = 'Gene signature index',
          ylab = 'ES',
-         main = "",
+         main = main,
          ...)
-    abline(0, 0)
+    axis(side = 1, at = c(1, xax_itvl), labels = xax_lbls)
+    abline(h = 0, lty = 2)
     for(i in 1:length(gsea2$gs_idx_neg)){
         lines(x = rep(seq_along(gsea2$signature)[gsea2$gs_idx_neg[i]], 2), y = boxlim, col = color[1], lwd = .5)
     }
@@ -213,4 +388,18 @@ plot.gsea2 <- function(gsea2, color=c("cornflowerblue","salmon"), ...) {
     }
     rect(xleft = 0, ybottom = boxlim[1], xright = length(gsea2$signature), ytop = boxlim[2])
 
+    if(legend){
+        centr <- floor(length(gsea2$signature)/2)
+        idx <- c(gsea2$ES_pos_idx, gsea2$ES_neg_idx)[which.max(c(gsea2$ES_pos, gsea2$ES_neg))]
+
+        if(idx <= centr) legend(x = centr, y = ylims[2]-.2, title = 'Targets', legend = c('pos', 'neg'), col = rev(color),
+                               lty = 1, horiz = TRUE, x.intersp = .7, y.intersp = .7, xjust = 0,
+                                lwd = 2, seg.len = .7, cex = 0.8)
+        else legend(x = centr, y = ylims[2]-.2, title = 'Targets', legend = c('pos', 'neg'), col = rev(color),
+                    lty = 1, horiz = TRUE, x.intersp = .7, y.intersp = .7, xjust = 1,
+                    lwd = 2, seg.len = .7, cex = 0.8)
+    }
+    par(mar = omar, mgp = omgp, las = 0) # restore old settings
 }
+
+

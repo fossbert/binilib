@@ -4,10 +4,17 @@
 #' @param nn integer of number of top MR to consider for each regulon
 #' @param direction character, which tail should be returned, defaults to both up and down
 #' @param make_regulon logical, whether to set class of return object to "regulon"
+#' @param reverse, logical, whether to reverse the top MR - useful for drug screening results and downstream applications
+#' @param verbose logical, whether to message progress report
 #' @return list object with top dysregulated MR per sample
 #' @export
 
-vpres2regulon <- function(vpres, nn = 25, direction = c('both', 'up', 'down'), make_regulon = FALSE) {
+vpres2regulon <- function(vpres,
+                          nn = 25,
+                          direction = c('both', 'up', 'down'),
+                          make_regulon = FALSE,
+                          reverse = FALSE,
+                          verbose = TRUE) {
 
     dir <- match.arg(direction)
 
@@ -20,10 +27,24 @@ vpres2regulon <- function(vpres, nn = 25, direction = c('both', 'up', 'down'), m
            tfm <- rep(-1, nn)}
     )
 
-    tmp <- apply(vpres, 2, function(i) {
-        names(tfm) <- rownames(vpres[order(i, decreasing = TRUE), ])[idx]
+    if(reverse) tfm <- tfm * -1
+
+    if(verbose){
+        message('Building regulon ...')
+        pb <- txtProgressBar(min = 0, max = ncol(vpres), style = 3)
+    } else pb <- NULL
+
+    tmp <- lapply(1:ncol(vpres), function(i, vpres) {
+
+        if(!is.null(pb)) setTxtProgressBar(pb, i)
+
+        smp <- vpres[,i]
+        names(tfm) <- rownames(vpres[order(smp, decreasing = TRUE), ])[idx]
+
         list(tfmode = tfm, likelihood = unname(abs(tfm)))
-    })
+
+    }, vpres = vpres)
+    names(tmp) <- colnames(vpres)
 
     if(make_regulon) class(tmp) <- "regulon"
     return(tmp)
