@@ -32,10 +32,11 @@ mouse2human <- function(eset, type = c('Symbol', 'Entrez')) {
 #' or there is no gene symbol for that particular external gene id.
 #'
 #' @param gene_ids a character vector of gene ids from the Ensembl or Entrez annotation, respectively
+#' @param verbose logical whether to message progress reports.
 #' @return a character vector of gene symbols, beware of NAs
 #' @export
 
-any2symbol <- function(gene_ids) {
+any2symbol <- function(gene_ids, verbose = TRUE) {
 
     data("geneInfo")
     idx <- Position(function(i) any(gene_ids %in% i), geneInfo)
@@ -44,11 +45,43 @@ any2symbol <- function(gene_ids) {
                         Entrez reference, respectively!")
 
     # report overlaps
-    message("\nFound ", sum(gene_ids %in% geneInfo[[idx]]), " out of ", length(gene_ids), " gene identifiers")
-    message("\nConverting ", tolower(names(geneInfo)[idx]), " to gene symbols")
+    if (verbose) {
+        message("\nFound ", sum(gene_ids %in% geneInfo[[idx]]), " out of ", length(gene_ids), " gene identifiers")
+        message("\nConverting ", tolower(names(geneInfo)[idx]), " to gene symbols")
+    }
 
     symbol <- geneInfo[["SYMBOL"]]
     names(symbol) <- geneInfo[[idx]]
     unname(symbol[gene_ids])
+
+}
+
+#' Convert Symbols or Ensembl gene ids to Entrez Ids
+#'
+#' Two reasons for NA return: the external gene id could not be found in the reference (org.Hs.Db)
+#' or there is no Entrez Id for that particular symbol or Ensembl Id, respectively.
+#'
+#' @param gene_ids a character vector of gene ids from the Hugo gene sybmol or Ensembl annotation, respectively
+#' @param verbose logical whether to message progress reports.
+#' @return a character vector of gene symbols, beware of NAs
+#' @export
+
+any2entrez <- function(gene_ids, verbose = TRUE) {
+
+    data("geneInfo")
+    idx <- Position(function(i) any(gene_ids %in% i), geneInfo)
+
+    if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids among the gene symbol
+                        and Ensembl reference, respectively!")
+
+    # report overlaps
+    if (verbose) {
+        message("\nFound ", sum(gene_ids %in% geneInfo[[idx]]), " out of ", length(gene_ids), " gene identifiers")
+        message("\nConverting ", tolower(names(geneInfo)[idx]), " to Entrez Ids")
+    }
+
+    entrez <- geneInfo[["ENTREZID"]]
+    names(entrez) <- geneInfo[[idx]]
+    unname(entrez[gene_ids])
 
 }

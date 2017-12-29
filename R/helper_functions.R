@@ -139,7 +139,7 @@ lapply_pair <- function(x, f, ...) {
 
         for(j in seq_along(x)) {
             if (i == j) next
-            id <- names(x)[[j]]
+            id <- names(x)[j]
             out[[i]][[id]] <- f(x[[i]], x[[j]], ...)
         }
 
