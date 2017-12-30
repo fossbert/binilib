@@ -38,7 +38,8 @@ mouse2human <- function(eset, type = c('Symbol', 'Entrez')) {
 
 any2symbol <- function(gene_ids, verbose = TRUE) {
 
-    data("geneInfo")
+    gene_ids <- as.character(gene_ids) # safety net, factors and integers cause trouble !
+    if(!base::exists('geneInfo', where = ".GlobalEnv")) data("geneInfo")
     idx <- Position(function(i) any(gene_ids %in% i), geneInfo)
 
     if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids among the Ensembl and
@@ -68,7 +69,8 @@ any2symbol <- function(gene_ids, verbose = TRUE) {
 
 any2entrez <- function(gene_ids, verbose = TRUE) {
 
-    data("geneInfo")
+    gene_ids <- as.character(gene_ids) # safety net, factors and integers cause trouble !
+    if(!base::exists('geneInfo', where = ".GlobalEnv")) data("geneInfo")
     idx <- Position(function(i) any(gene_ids %in% i), geneInfo)
 
     if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids among the gene symbol
