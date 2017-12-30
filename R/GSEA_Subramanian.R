@@ -319,12 +319,15 @@ plot.gsea1 <- function(gsea1,
     # getting acquainted
     essign <- as.character(sign(gsea1$ES))
     switch(essign,
-           '-1' = {ylims <- c(gsea1$ES - 0.2, max(gsea1$RS))},
-           '1' = {ylims <- c(min(gsea1$RS), gsea1$ES + 0.2)})
+           '-1' = {
+               ylims <- c(gsea1$ES - 0.2, max(gsea1$RS))
+               boxlim <- c(min(ylims) + 0.1, min(ylims))
+               },
+           '1' = {
+               ylims <- c(min(gsea1$RS), gsea1$ES + 0.2)
+               boxlim <- c(max(ylims) - 0.1, max(ylims))
+               })
 
-    switch(essign,
-           '-1' = {boxlim <- c(min(ylims) + 0.1, min(ylims))},
-           '1' = {boxlim <- c(max(ylims) - 0.1, max(ylims))})
 
     xax_itvl <- seq(floor(length(x)/2000))*2000
     xax_lbls <- if(!plotSignature && !is.null(signatureNames)) {
@@ -444,7 +447,7 @@ plot.gsea2 <- function(gsea2,
          tck = -.025,
          ...)
     axis(side = 1, at = c(1, xax_itvl), labels = xax_lbls, tck = -0.025, cex.axis = 0.7)
-    abline(h = 0, lty = 2)
+    abline(h = 0, lty = 2, lwd = 2)
     for(i in seq_along(gsea2$gs_idx_neg)){
         lines(x = rep(x[gsea2$gs_idx_neg[i]], 2), y = boxlimNeg, col = color[1], lwd = .5)
     }
