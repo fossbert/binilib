@@ -12,13 +12,11 @@ mouse2human <- function(eset, type = c('Symbol', 'Entrez')) {
     type <- match.arg(type, choices = c('Symbol', 'Entrez'))
 
     # retrieve information on gene homologies
-    data("homologyInfo")
+    if(!base::exists("homologyInfo", where = ".GlobalEnv")) data("homologyInfo")
     common <- intersect(mgenes, homologyInfo[[type]])
     idx <- match(common, homologyInfo[[type]])
 
-    if (length(common) == 0) {
-        stop("Sorry, could not align gene identifiers, please double check.")
-    }
+    if (length(common) == 0) stop("Sorry, could not align gene identifiers, please double check.")
 
     tmp <- eset[common, ]
     rownames(tmp) <- names(homologyInfo[[type]])[idx]
@@ -42,8 +40,7 @@ any2symbol <- function(gene_ids, verbose = TRUE) {
     if(!base::exists('geneInfo', where = ".GlobalEnv")) data("geneInfo")
     idx <- Position(function(i) any(gene_ids %in% i), geneInfo)
 
-    if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids among the Ensembl and
-                        Entrez reference, respectively!")
+    if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids !", call. = FALSE)
 
     # report overlaps
     if (verbose) {
@@ -73,8 +70,7 @@ any2entrez <- function(gene_ids, verbose = TRUE) {
     if(!base::exists('geneInfo', where = ".GlobalEnv")) data("geneInfo")
     idx <- Position(function(i) any(gene_ids %in% i), geneInfo)
 
-    if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids among the gene symbol
-                        and Ensembl reference, respectively!")
+    if(is.na(idx)) stop("Sorry, could not find any of the provided gene ids !", call. = FALSE)
 
     # report overlaps
     if (verbose) {

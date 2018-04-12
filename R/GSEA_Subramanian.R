@@ -34,7 +34,7 @@ gsea1T <- function(signature,
                     )
 
                 # little safety net
-                if(!any(gS %in% names(signature))) stop('Gene set names could not be found in signature!')
+                if(!any(gS %in% names(signature))) stop('Gene set names could not be found in signature!', call. = FALSE)
 
                 # GSEA Subramanian style
                 idx <- which(names(signature) %in% gS) # positions
@@ -69,68 +69,15 @@ gsea1T <- function(signature,
                               es_idx = maxabs,
                               gs_idx = idx,
                               ledge = leg,
-                              ledge_index = legidx)
+                              ledge_index = legidx,
+                              NES = NULL,
+                              pval = NULL,
+                              null_es = NULL,
+                              mean_nulles = NULL)
                 class(gsea1) <- "gsea1"
                 return(gsea1)
                 }
     }
-
-#' Calculating a null distribution of enrichment scores
-#'
-#' This function generates a GSEA null distribution of enrichment scores based on gene shuffling, i.e.
-#' the positions of genes in the signature are permuted rather than phenotype labels.
-#'
-#' @param signature named numeric vector of gene-level statistics
-#' @param gS character vector of gene names matching names from the signature
-#' @param w numeric indicating the weights used for GSEA (defaults to 1)
-#' @param perm integer indicating the number of permutations to carry out (defaults to 1000)
-#' @param seed integer for random number generation during the permutation process
-#' @param plot_hist logical on whether to plot a histogram of the permutation-based enrichment scores
-#' @param verbose logical on whether to message progress report
-#' @return A gsea_null object
-#' @export
-gsea_null <- function(signature,
-                      gS,
-                      w = 1,
-                      perm = 1000,
-                      seed = 42,
-                      plot_hist = FALSE,
-                      verbose = TRUE) {
-
-        set.seed(seed)
-
-        # set up permutations
-        null_list <- lapply(1:perm, function(i, signature){
-                tmp <- signature
-                names(tmp) <- sample(names(signature))
-                tmp
-            }, signature = signature)
-
-        # message date and what's going on
-        if (verbose) {
-            message("\nCalculating null distribution of enrichment scores by gene shuffling.\nStarted at ", date())
-            pb <- txtProgressBar(max = length(null_list), style = 3)
-        } else pb <- NULL
-
-        # loop through permutations and calculate enrichment scores
-        null_es <- vapply(seq_along(null_list), function(i, gS, w){
-
-            if (!is.null(pb)) setTxtProgressBar(pb, i)
-
-            gsea1T(signature = null_list[[i]], gS = gS, weight = w, onlyES = TRUE)
-
-        }, FUN.VALUE = numeric(1), gS = gS, w = w)
-
-        if(plot_hist) graphics::hist(null_es, breaks = perm/10, main = '', xlab = 'Enrichment Score')
-
-        gsea_null <- list(null_es = null_es,
-                          pos_null_es = mean(null_es[null_es >= 0]),
-                          neg_null_es = mean(null_es[null_es < 0]))
-
-        class(gsea_null) <- "gsea_null"
-        return(gsea_null)
-}
-
 
 #' This function performs GSEA for the negative and positive targets, respectively, of a regulatory gene.
 #'
@@ -170,7 +117,7 @@ gsea_regulon <- function(signature,
     neg_targ <- names(tfmode[tfmode < 0])
 
     # little safety net
-    if(!any(names(tfmode) %in% names(signature))) stop('Gene set names could not be found in signature!')
+    if(!any(names(tfmode) %in% names(signature))) stop('Gene set names could not be found in signature!', call. = FALSE)
 
     # sorting type
     sort_type <- match.arg(arg = sorting, choices = c('decreasing', 'increasing'))
@@ -185,7 +132,9 @@ gsea_regulon <- function(signature,
         RS_pos = pos_gsea$RS, RS_neg = neg_gsea$RS, # running sum for each gene set
         gs_idx_pos = pos_gsea$gs_idx, gs_idx_neg = neg_gsea$gs_idx, # indices for gene sets in signature
         ledge_pos = pos_gsea$ledge, ledge_neg = neg_gsea$ledge, # leading edges
-        ledge_idx_pos = pos_gsea$ledge_index, ledge_idx_neg = neg_gsea$ledge_index # leading edge positions in signature
+        ledge_idx_pos = pos_gsea$ledge_index, ledge_idx_neg = neg_gsea$ledge_index, # leading edge positions in signature
+        null_es_pos = NULL, null_es_neg = NULL, NES_pos = NULL, NES_neg = NULL,
+        pval_pos = NULL, pval_neg = NULL
 )
 
     class(gsea.obj) <- "gsea2"
@@ -244,7 +193,9 @@ gsea2T <- function(signature,
         RS_pos = set1_gsea$RS, RS_neg = set2_gsea$RS, # running sum for each gene set
         gs_idx_pos = set1_gsea$gs_idx, gs_idx_neg = set2_gsea$gs_idx, # indices for gene sets in signature
         ledge_pos = set1_gsea$ledge, ledge_neg = set2_gsea$ledge, # leading edges
-        ledge_idx_pos = set1_gsea$ledge_index, ledge_idx_neg = set2_gsea$ledge_index # leading edge positions in signature
+        ledge_idx_pos = set1_gsea$ledge_index, ledge_idx_neg = set2_gsea$ledge_index, # leading edge positions in signature
+        null_es_pos = NULL, null_es_neg = NULL, NES_pos = NULL, NES_neg = NULL,
+        pval_pos = NULL, pval_neg = NULL
     )
 
     class(gsea.obj) <- "gsea2"
@@ -261,6 +212,7 @@ gsea2T <- function(signature,
 #' @param plotSignature Logical whether to include a graph on the signature (e.g. t-statistics)
 #' @param signatureNames Character vector indicating the conditions being compared. Defaults to NULL. Otherwise a charater vector of length two.
 #' @param signatureType Character to indicate the type of gene level statistic (e.g. t-statistic).
+#' @param NES Logical whether to include the NES estimated from a null model
 #' Defaults to NULL which will yield a 'signature score' label.
 #' @param ... Given for compatibility to the plot generic function
 #' @return Nothing, a plot is generated in the default output device
@@ -337,7 +289,7 @@ plot.gsea1 <- function(gsea1,
     # time to plot
     par(mar = c(3.1, 3.1, 1, 1), mgp = c(2, .7, 0), las = 1)
     plot(x, gsea1$RS,
-         col = color, las = 1, lwd = 2,
+         col = color, las = 1, lwd = 3,
          ylim = ylims,
          type = 'l',
          xaxt = 'n',
@@ -349,9 +301,23 @@ plot.gsea1 <- function(gsea1,
     axis(side = 1, at = c(1, xax_itvl), labels = xax_lbls, cex.axis = 0.7)
     abline(h = 0, lty = 2, lwd = 2)
     for(i in seq_along(gsea1$gs_idx)){
-        lines(x = rep(x[gsea1$gs_idx[i]], 2), y = boxlim, col = color, lwd = .5)
+        lines(x = rep(x[gsea1$gs_idx[i]], 2), y = boxlim, col = color, lwd = .8)
     }
     rect(xleft = 0, ybottom = boxlim[1], xright = length(x), ytop = boxlim[2])
+    if(!is.null(gsea1$NES)) {
+        switch(essign,
+               '-1' = {
+                   text(x = round(length(x)/2),
+                        y = boxlim[1], pos = 3,
+                        labels = paste0('NES = ', gsea1$NES, ', p = ', gsea1$pval))
+               },
+               '1' = {
+                   text(x = round(length(x)/2),
+                        y = boxlim[1], pos = 1,
+                        labels = paste0('NES = ', gsea1$NES, ', p = ', gsea1$pval))
+               })
+
+    }
     par(mar = omar, mgp = omgp, mfrow = c(1,1), mfcol = c(1,1), las = 0) # restore old settings
 }
 
@@ -436,7 +402,7 @@ plot.gsea2 <- function(gsea2,
     boxlimNeg <-  c(max(ylims)-0.1, max(ylims)) * sign(gsea2$ES_neg)
     par(mar = c(3.1, 3.1, 1, 1), mgp = c(2, 0.7, 0), las = 1)
     plot(x, gsea2$RS_neg,
-         col = color[1], las = 1, lwd = 2,
+         col = color[1], las = 1, lwd = 3,
          ylim = ylims,
          type = 'l',
          xaxt = 'n',
@@ -449,15 +415,15 @@ plot.gsea2 <- function(gsea2,
     axis(side = 1, at = c(1, xax_itvl), labels = xax_lbls, tck = -0.025, cex.axis = 0.7)
     abline(h = 0, lty = 2, lwd = 2)
     for(i in seq_along(gsea2$gs_idx_neg)){
-        lines(x = rep(x[gsea2$gs_idx_neg[i]], 2), y = boxlimNeg, col = color[1], lwd = .5)
+        lines(x = rep(x[gsea2$gs_idx_neg[i]], 2), y = boxlimNeg, col = color[1], lwd = .8)
     }
     rect(xleft = 0, ybottom = boxlimNeg[1], xright = length(x), ytop = boxlimNeg[2])
 
     # positive targets
     boxlimPos <- c(max(ylims)-0.1, max(ylims))*sign(gsea2$ES_pos)
-    lines(x, gsea2$RS_pos, col = color[2], las = 1, lwd = 2)
+    lines(x, gsea2$RS_pos, col = color[2], las = 1, lwd = 3)
     for(i in seq_along(gsea2$gs_idx_pos)){
-        lines(x = rep(x[gsea2$gs_idx_pos[i]], 2), y = boxlimPos, col = color[2], lwd = .5)
+        lines(x = rep(x[gsea2$gs_idx_pos[i]], 2), y = boxlimPos, col = color[2], lwd = .8)
     }
     rect(xleft = 0, ybottom = boxlimPos[1], xright = length(x), ytop = boxlimPos[2])
 
@@ -482,8 +448,26 @@ plot.gsea2 <- function(gsea2,
                           lty = 1, horiz = TRUE, x.intersp = .7, y.intersp = .7, xjust = 0,
                           yjust = 0, lwd = 2, seg.len = .7, cex = 0.8)
                })
+
+        if(!is.null(gsea2$NES_pos)) {
+            switch(where,
+                   '1' = {
+                       text(x = round(length(x)/2), y = boxlimPos[1], pos = 3,
+                            labels = paste0('NES = ', gsea2$NES_pos, ', p = ', gsea2$pval_pos))
+                       text(x = round(length(x)/2), y = boxlimNeg[1], pos = 1,
+                            labels = paste0('NES = ', gsea2$NES_neg, ', p = ', gsea2$pval_neg))
+                   },
+                   '2' = {
+                       text(x = round(length(x)/2), y = boxlimPos[1], pos = 1,
+                            labels = paste0('NES = ', gsea2$NES_pos, ', p = ', gsea2$pval_pos))
+                       text(x = round(length(x)/2), y = boxlimNeg[1], pos = 3,
+                            labels = paste0('NES = ', gsea2$NES_neg, ', p = ', gsea2$pval_neg))
+                   })
+
+        }
     }
     par(mar = omar, mgp = omgp, mfrow = c(1,1), mfcol = c(1,1), las = 0) # restore old settings
 }
+
 
 
