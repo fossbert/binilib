@@ -22,5 +22,6 @@ Collate:
     'Plotting.R'
     'geneConversions.R'
     'helper_functions.R'
+    'plot_gsea.R'
     'reorder_within.R'
     'viper-helpers.R'
