@@ -4,7 +4,8 @@
 \alias{find_var_genes}
 \title{Finding the most variable features of a matrix}
 \usage{
-find_var_genes(expmat, n = 2000, method = c("mad", "sd"), center = FALSE)
+find_var_genes(expmat, n = 2000, method = c("mad", "sd"),
+  center = FALSE)
 }
 \arguments{
 \item{expmat}{numerical matrix, typically a gene expression matrix}

@@ -41,7 +41,6 @@ NULL
 
 
 #' Information on 6068 regulatory genes used in the Califanoverse
-#'
 #' See Alvarez, Nature Genetics, 2016 for details
 #'
 #' @name regulatorNames
@@ -57,19 +56,71 @@ NULL
 #'
 NULL
 
-
-#' Collection of regulon objects
+#' Modules c1 through c6 and hallmark gene sets from the MSigDb v6.2
+#' Downloaded from the Broad Institute on October 2018
 #'
-#' @name regulons
+#' @name msigdb
 #' @docType data
 #' @author HCM
 #' @keywords data
-#' @format List with five elements containing gene symbols for the following categories
+#' @format List with 12 elements containing human gene symbols
 #' \describe{
-#' \item{epiCUMC}{ARACNe network, mRNA expression from epithelial LCM-RNA-Seq CUMC cohort}
-#' \item{ChEA}{Protein-DNA network from the ChEA database (version 2015)}
-#' \item{StringDb}{Protein-protein interactions with high confidence (StringDb score > 700)}
-#' \item{PrePPi}{Protein-protein interactions with high confidence (PrePPi score > 2400)}
+#' \item{c1.all}{hallmark gene sets, n = 326}
+#' \item{c2.cgp}{canonical pathways, n = 3433}
+#' \item{c2.cp}{transcription factor targets, n = 1329}
+#' \item{c3.mir}{micro RNA targets, n = 221}
+#' \item{c3.tft}{transcription factor targets, n = 615}
+#' \item{c4.cgn}{cancer gene neighborhoods, n = 427}
+#' \item{c4.cm}{cancer modules factor, n = 431}
+#' \item{c5.bp}{GO biological processes, n = 4436}
+#' \item{c5.cc}{GO cellular components, n = 580}
+#' \item{c5.mf}{GO molecular function, n = 901}
+#' \item{c6.all}{oncogenic signatures, n = 189}
+#' \item{h.all}{hallmark gene sets, n = 50}
 #' }
+NULL
+
+#' Murine version of the Selection of MSigDb gene sets v6.2
+#' Downloaded from the Broad Institute Octobre 2018 and
+#' converted using information on gene homolgy from the
+#' Jax Bioinformatics portal
 #'
+#' @name msigdbMouse
+#' @docType data
+#' @author HCM
+#' @keywords data
+#' @format List 12 elements containing mouse gene symbols
+#' \describe{
+#' \item{c1.all}{hallmark gene sets, n = 326}
+#' \item{c2.cgp}{canonical pathways, n = 3433}
+#' \item{c2.cp}{transcription factor targets, n = 1329}
+#' \item{c3.mir}{micro RNA targets, n = 221}
+#' \item{c3.tft}{transcription factor targets, n = 615}
+#' \item{c4.cgn}{cancer gene neighborhoods, n = 427}
+#' \item{c4.cm}{cancer modules factor, n = 431}
+#' \item{c5.bp}{GO biological processes, n = 4436}
+#' \item{c5.cc}{GO cellular components, n = 580}
+#' \item{c5.mf}{GO molecular function, n = 901}
+#' \item{c6.all}{oncogenic signatures, n = 189}
+#' \item{h.all}{hallmark gene sets, n = 50}
+#' }
+NULL
+
+
+#' Full homology data as provided by Jax
+#' Information on a more complete set of 18548 genes for which the Jax Informatics Portal
+#' provides mappings between human and mouse genes. This includes human genes for which there are
+#' multiple corresponding mouse genes, and vice versa, mouse genes with multiple corresponding human
+#' genes.
+#'
+#' @name homologyTable
+#' @docType data
+#' @author HCM
+#' @keywords data
+#' @format List with two elements (tibble) containing gene \strong{symbol} and \strong{entrez id} data, respectively
+#' \describe{
+#' \item{Symbol}{tibble with two columns/variables of mouse and human gene symbols}
+#' \item{Entrez}{tibble with two columns/variables of mouse and human entrez ids}
+#' }
+#' @source \url{http://www.informatics.jax.org/homology.shtml}
 NULL

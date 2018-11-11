@@ -2,9 +2,9 @@
 % Please edit documentation in R/helper_functions.R
 \name{collapse_multi}
 \alias{collapse_multi}
-\title{Collapsing many-to-one relationships for gene expression matrices}
+\title{Collapsing many-to-one relationships for gene expression matrices on per sample basis}
 \usage{
-collapse_multi(expmat, fac, method = c("mean", "median", "sum"),
+collapse_multi(expmat, fac, method = c("mean", "median", "max", "sum"),
   verbose = TRUE)
 }
 \arguments{
@@ -20,5 +20,5 @@ collapse_multi(expmat, fac, method = c("mean", "median", "sum"),
 new matrix with rows or columns in order of the reference list
 }
 \description{
-Collapsing many-to-one relationships for gene expression matrices
+Collapsing many-to-one relationships for gene expression matrices on per sample basis
 }

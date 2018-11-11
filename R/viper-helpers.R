@@ -1,6 +1,6 @@
 #' Extract the top up and down regulated MR per sample
 #'
-#' @param vipres numeric matrix of NES as returned by the viper function
+#' @param vpres numeric matrix of NES as returned by the viper function
 #' @param nn integer of number of top MR to consider for each regulon
 #' @param direction character, which tail should be returned, defaults to both up and down
 #' @param make_regulon logical, whether to set class of return object to "regulon"
@@ -147,4 +147,53 @@ vpsig_limma <- function(eset, ref, per = 1000, keep_all = FALSE, seed = 42, verb
 }
 
 
+#' Convert regular (one-tailed) gene sets to regulons
+#'
+#' So they can be used with the viper function
+#'
+#' @param geneSets list of named lists representing gene sets of gene symbols
+#' @return regulon containing one-tailed gene sets as regulators
+#' @export
+
+geneSets2regulon <- function(geneSets) {
+
+    tmp <- lapply(geneSets, function(i){
+
+        tm <- rep(1, length(i))
+        names(tm) <- i
+        list(tfmode = tm, likelihood = rep(1/length(i), length(i)))
+
+    })
+    class(tmp) <- 'regulon'
+    return(tmp)
+}
+
+#' Extract msviper results
+#'
+#' @param mrst msviper object
+#' @param padjust method for adjusting p-values for multiple hypothesis testing
+#' @return a tibble with genes, NES, p-values and FDR
+#' @export
+
+res_msvip <- function(mrst, padjust = c('fdr', 'bonferroni','none')) {
+
+    method <- match.arg(padjust, choices = c('fdr', 'bonferroni','none'))
+
+    if(is.null(mrst$es$nes.se)){
+        res <- tibble::tibble(gene = names(mrst$es$nes),
+                              nes = mrst$es$nes,
+                              pval = mrst$es$p.value,
+                              padj = p.adjust(mrst$es$p.value, method = method))
+    } else{
+        res <- tibble::tibble(gene = names(mrst$es$nes),
+                              nes = mrst$es$nes,
+                              nes_se = mrst$es$nes.se,
+                              pval = mrst$es$p.value,
+                              padj = p.adjust(mrst$es$p.value, method = method))
+    }
+
+    res <- dplyr::arrange(res, desc(nes))
+    return(res)
+
+}
 

@@ -212,8 +212,8 @@ gsea2T <- function(signature,
 #' @param plotSignature Logical whether to include a graph on the signature (e.g. t-statistics)
 #' @param signatureNames Character vector indicating the conditions being compared. Defaults to NULL. Otherwise a charater vector of length two.
 #' @param signatureType Character to indicate the type of gene level statistic (e.g. t-statistic).
-#' @param NES Logical whether to include the NES estimated from a null model
-#' Defaults to NULL which will yield a 'signature score' label.
+#' @param ledge logical whether to plot the leading edge line
+#' @param fixY numeric vector specyfying y-axis limits, defaults to NULL
 #' @param ... Given for compatibility to the plot generic function
 #' @return Nothing, a plot is generated in the default output device
 #' @method plot gsea1
@@ -224,6 +224,8 @@ plot.gsea1 <- function(gsea1,
                        plotSignature = FALSE,
                        signatureNames = NULL,
                        signatureType = NULL,
+                       ledge = TRUE,
+                       fixY = NULL,
                        ...) {
 
     omar <- par()$mar
@@ -250,7 +252,7 @@ plot.gsea1 <- function(gsea1,
         sigsort <- as.character(sign(y[1]))
         switch(sigsort,
                '-1' = {
-                   polygon(c(min(x), x[y <= 0]), c(0, y[y <= 0]), border = NA, col = "gray80") ;
+                   polygon(c(min(x), x[y <= 0]), c(0, y[y <= 0]), border = NA, col = "gray80")
                    polygon(c(max(x), x[y > 0]), c(0, y[y > 0]), border = NA, col = "gray80")
                    if(!is.null(signatureNames)) {
                        text(min(x), max(y)/5, label = signatureNames[1], pos = 4)
@@ -269,17 +271,30 @@ plot.gsea1 <- function(gsea1,
     }
 
     # getting acquainted
-    essign <- as.character(sign(gsea1$ES))
-    switch(essign,
-           '-1' = {
-               ylims <- c(gsea1$ES - 0.2, max(gsea1$RS))
-               boxlim <- c(min(ylims) + 0.1, min(ylims))
-               },
-           '1' = {
-               ylims <- c(min(gsea1$RS), gsea1$ES + 0.2)
-               boxlim <- c(max(ylims) - 0.1, max(ylims))
-               })
 
+    # if ylims should be fixed
+    if(!is.null(fixY)){
+        ylims <- fixY
+        if(min(ylims) == 0){
+            boxlim <- c(max(ylims) - 0.1, max(ylims))
+            essign <- "1"
+        } else {
+            boxlim <- c(min(ylims) + 0.1, min(ylims))
+            essign <- "-1"
+        }
+    } else{
+        # if ylims roam freely
+        essign <- as.character(sign(gsea1$ES))
+        switch(essign,
+               '-1' = {
+                   ylims <- c(gsea1$ES - 0.2, max(gsea1$RS))
+                   boxlim <- c(min(ylims) + 0.1, min(ylims))
+               },
+               '1' = {
+                   ylims <- c(min(gsea1$RS), gsea1$ES + 0.2)
+                   boxlim <- c(max(ylims) - 0.1, max(ylims))
+               })
+    }
 
     xax_itvl <- seq(floor(length(x)/2000))*2000
     xax_lbls <- if(!plotSignature && !is.null(signatureNames)) {
@@ -304,17 +319,20 @@ plot.gsea1 <- function(gsea1,
         lines(x = rep(x[gsea1$gs_idx[i]], 2), y = boxlim, col = color, lwd = .8)
     }
     rect(xleft = 0, ybottom = boxlim[1], xright = length(x), ytop = boxlim[2])
+
+    if(ledge) lines(x = rep(gsea1$es_idx, 2), y = c(0, gsea1$ES), col = color, lty = 2) # leading edge line
+
     if(!is.null(gsea1$NES)) {
         switch(essign,
                '-1' = {
                    text(x = round(length(x)/2),
                         y = boxlim[1], pos = 3,
-                        labels = paste0('NES = ', gsea1$NES, ', p = ', gsea1$pval))
+                        labels = paste0('NES = ', round(gsea1$NES, 2), ', p = ', signif(gsea1$pval, 3)))
                },
                '1' = {
                    text(x = round(length(x)/2),
                         y = boxlim[1], pos = 1,
-                        labels = paste0('NES = ', gsea1$NES, ', p = ', gsea1$pval))
+                        labels = paste0('NES = ', round(gsea1$NES, 2), ', p = ', signif(gsea1$pval, 3)))
                })
 
     }
@@ -330,10 +348,13 @@ plot.gsea1 <- function(gsea1,
 #' @param gsea2 gsea2 object as returned from \code{gsea_regulon} or \code{gsea2T}
 #' @param color Vector of two components indicating the colors for the negative and positive parts of the regulon
 #' @param legend Logical on whether to draw a legend explaining the two parts of the regulon
+#' @param legNames Character, defaults to Targets, pos and neg
 #' @param main Character vector given as argument for convenience
 #' @param plotSignature Logical whether to include a graph on the signature (e.g. t-statistics)
 #' @param signatureNames Character vector indicating the conditions being compared. Defaults to NULL. Otherwise a charater vector of length two.
 #' @param signatureType Character to indicate the type of gene level statistic (e.g. t-statistic).
+#' @param ledge logical whether to plot the leading edge line
+#' @param fixY numeric vector specyfying y-axis limits, defaults to NULL
 #' Defaults to NULL which will yield a 'signature score' label.
 #' @param ... Given for compatibility to the plot generic function
 #' @return Nothing, a plot is generated in the default output device
@@ -342,10 +363,13 @@ plot.gsea1 <- function(gsea1,
 plot.gsea2 <- function(gsea2,
                        color = c("cornflowerblue","salmon"),
                        legend = TRUE,
+                       legNames = c('Targets', 'pos', 'neg'),
                        main = '',
                        plotSignature = FALSE,
                        signatureNames = NULL,
                        signatureType = NULL,
+                       ledge = TRUE,
+                       fixY = NULL,
                        ...) {
 
     omar <- par()$mar
@@ -392,14 +416,28 @@ plot.gsea2 <- function(gsea2,
     }
 
     # getting acquainted
-    ylims <- (round(max(abs(c(gsea2$ES_pos, gsea2$ES_neg))), 1) + 0.2) * c(-1, 1)
+    if(!is.null(fixY)){
+        ylims <- fixY
+    } else{
+        ylims <- (round(max(abs(c(gsea2$ES_pos, gsea2$ES_neg))), 1) + 0.2) * c(-1, 1)
+    }
     xax_itvl <- seq(floor(length(x)/2000))*2000
     xax_lbls <- if(!plotSignature && !is.null(signatureNames)) {
         c(signatureNames[1], xax_itvl[1:(length(xax_itvl)-1)], signatureNames[2])
     } else c(0, xax_itvl)
 
-    # negative targets
-    boxlimNeg <-  c(max(ylims)-0.1, max(ylims)) * sign(gsea2$ES_neg)
+    # define boxes
+    if(sign(gsea2$ES_pos) == sign(gsea2$ES_neg)) {
+        # if ES have same sign, fix order for boxes, positive above, negative down
+        boxlimPos <- c(max(ylims)-0.1, max(ylims))
+        boxlimNeg <-  c(min(ylims)+0.1, min(ylims))
+
+    } else {
+        boxlimPos <- c(max(ylims)-0.1, max(ylims))*sign(gsea2$ES_pos)
+        boxlimNeg <-  c(max(ylims)-0.1, max(ylims)) * sign(gsea2$ES_neg)
+    }
+
+    # time to plot - starting with negative targets
     par(mar = c(3.1, 3.1, 1, 1), mgp = c(2, 0.7, 0), las = 1)
     plot(x, gsea2$RS_neg,
          col = color[1], las = 1, lwd = 3,
@@ -413,20 +451,33 @@ plot.gsea2 <- function(gsea2,
          tck = -.025,
          ...)
     axis(side = 1, at = c(1, xax_itvl), labels = xax_lbls, tck = -0.025, cex.axis = 0.7)
-    abline(h = 0, lty = 2, lwd = 2)
+    abline(h = 0, lty = 2, lwd = 2) # center line
+    # bar tags for negative targets
     for(i in seq_along(gsea2$gs_idx_neg)){
         lines(x = rep(x[gsea2$gs_idx_neg[i]], 2), y = boxlimNeg, col = color[1], lwd = .8)
     }
     rect(xleft = 0, ybottom = boxlimNeg[1], xright = length(x), ytop = boxlimNeg[2])
 
-    # positive targets
-    boxlimPos <- c(max(ylims)-0.1, max(ylims))*sign(gsea2$ES_pos)
+    # running sum plot for positive targets
     lines(x, gsea2$RS_pos, col = color[2], las = 1, lwd = 3)
+
+    # bar tags for positive targets
     for(i in seq_along(gsea2$gs_idx_pos)){
         lines(x = rep(x[gsea2$gs_idx_pos[i]], 2), y = boxlimPos, col = color[2], lwd = .8)
     }
     rect(xleft = 0, ybottom = boxlimPos[1], xright = length(x), ytop = boxlimPos[2])
 
+    # leading edge lines
+    if(ledge) {
+        lines(x = rep(gsea2$ES_pos_idx, 2),
+              y = c(0, gsea2$ES_pos), col = color[2],
+              lty = 2)
+        lines(x = rep(gsea2$ES_neg_idx, 2),
+              y = c(0, gsea2$ES_neg), col = color[1],
+              lty = 2)
+    }
+
+    # legend
     if(legend){
         # find distances from the ES
         essign <- as.character(sign(gsea2$ES_pos))
@@ -437,33 +488,40 @@ plot.gsea2 <- function(gsea2,
 
         switch(where,
                '1' = {
-                legend(x = length(x), y = ylims[2]-.15, title = 'Targets',
-                       legend = c('pos', 'neg'), col = rev(color),
+                legend(x = length(x), y = ylims[2]-.15, title = legNames[1],
+                       legend = legNames[2:3], col = rev(color),
                        lty = 1, horiz = TRUE, x.intersp = .7, y.intersp = .7, xjust = 1,
                           lwd = 2, seg.len = .7, cex = 0.8)
                },
                '2' = {
-                   legend(x = 1, y = ylims[1]+.15, title = 'Targets', legend = c('pos', 'neg'),
+                   legend(x = 1, y = ylims[1]+.15, title = legNames[1], legend = legNames[2:3],
                           col = rev(color),
                           lty = 1, horiz = TRUE, x.intersp = .7, y.intersp = .7, xjust = 0,
                           yjust = 0, lwd = 2, seg.len = .7, cex = 0.8)
                })
+    }
+    # NES and p-value if available
+    if(!is.null(gsea2$NES_pos)) {
+        # again in case NES have same sign ... fix order
+        if(sign(gsea2$NES_pos) == sign(gsea2$NES_neg)){
+            text(x = round(length(x)/2), y = boxlimPos[1], pos = 1,
+                 labels = paste0('NES = ', round(gsea2$NES_pos, 2), ', p = ', signif(gsea2$pval_pos, 3)))
+            text(x = round(length(x)/2), y = boxlimNeg[1], pos = 3,
+                 labels = paste0('NES = ', round(gsea2$NES_neg, 2), ', p = ', signif(gsea2$pval_neg, 3)))
 
-        if(!is.null(gsea2$NES_pos)) {
-            switch(where,
-                   '1' = {
-                       text(x = round(length(x)/2), y = boxlimPos[1], pos = 3,
-                            labels = paste0('NES = ', gsea2$NES_pos, ', p = ', gsea2$pval_pos))
-                       text(x = round(length(x)/2), y = boxlimNeg[1], pos = 1,
-                            labels = paste0('NES = ', gsea2$NES_neg, ', p = ', gsea2$pval_neg))
-                   },
-                   '2' = {
-                       text(x = round(length(x)/2), y = boxlimPos[1], pos = 1,
-                            labels = paste0('NES = ', gsea2$NES_pos, ', p = ', gsea2$pval_pos))
-                       text(x = round(length(x)/2), y = boxlimNeg[1], pos = 3,
-                            labels = paste0('NES = ', gsea2$NES_neg, ', p = ', gsea2$pval_neg))
-                   })
-
+        # otherwise put NES according to ES direction
+        } else {
+            if(gsea2$NES_pos >= 0){
+                text(x = round(length(x)/2), y = boxlimPos[1], pos = 1,
+                     labels = paste0('NES = ', round(gsea2$NES_pos, 2), ', p = ', signif(gsea2$pval_pos, 3)))
+                text(x = round(length(x)/2), y = boxlimNeg[1], pos = 3,
+                     labels = paste0('NES = ', round(gsea2$NES_neg, 2), ', p = ', signif(gsea2$pval_neg, 3)))
+            } else {
+                text(x = round(length(x)/2), y = boxlimPos[1], pos = 3,
+                     labels = paste0('NES = ', round(gsea2$NES_pos, 2), ', p = ', signif(gsea2$pval_pos, 3)))
+                text(x = round(length(x)/2), y = boxlimNeg[1], pos = 1,
+                     labels = paste0('NES = ', round(gsea2$NES_neg, 2), ', p = ', signif(gsea2$pval_neg, 3)))
+            }
         }
     }
     par(mar = omar, mgp = omgp, mfrow = c(1,1), mfcol = c(1,1), las = 0) # restore old settings

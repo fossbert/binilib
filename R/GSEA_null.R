@@ -1,3 +1,6 @@
+#' @include classes.R
+NULL
+
 #' Calculating a null distribution of enrichment scores for two-tail GSEA
 #'
 #' This function generates a GSEA null distribution of enrichment scores based on gene shuffling, i.e.
@@ -79,7 +82,6 @@ gsea2T_null <- function(signature,
 #' @export
 #' @docType methods
 #' @rdname gsea_null-methods
-#' @include classes.R
 setGeneric("gsea_null", function(gsea_obj, ...) standardGeneric("gsea_null"))
 
 #' @rdname gsea_null-methods
@@ -134,7 +136,7 @@ setMethod("gsea_null", "gsea1", function(gsea_obj,
     # derive p-values: 1.) analytically, two-tailed
     if(analytical){
         gsea_obj$pval <- signif(pnorm(abs(gsea_obj$NES), lower.tail = FALSE)*2, 3)
-    } else {
+    } else { # 2.) permutation based, one-tailed
         if(gsea_obj$ES >= 0) {
             pval <- sum(null_es > gsea_obj$ES)/length(null_es)
         } else {
@@ -146,7 +148,6 @@ setMethod("gsea_null", "gsea1", function(gsea_obj,
     }
     return(gsea_obj)
 })
-
 
 
 #' @rdname gsea_null-methods
@@ -196,37 +197,35 @@ setMethod("gsea_null", "gsea2", function(gsea_obj,
     gsea_obj$null_es_pos <- null_es_pos
     gsea_obj$null_es_neg <- null_es_neg
 
-    # p-value and NES depend on how the signature was sorted in the first place
-    # either chose to derive p-value analytically or by permutation
-    switch(sigsort,
-           '-1' = {
-               gsea_obj$NES_pos <- gsea_obj$ES_pos/abs(mean(gsea_obj$null_es_pos[gsea_obj$null_es_pos < 0]))
-               gsea_obj$NES_neg <- gsea_obj$ES_neg/abs(mean(gsea_obj$null_es_neg[gsea_obj$null_es_neg >= 0]))
+    # identify the right tail for each enrichment score
 
-               if(analytical){
-                   gsea_obj$pval_pos <- pnorm(abs(gsea_obj$NES_pos), lower.tail = FALSE)*2
-                   gsea_obj$pval_neg <- pnorm(abs(gsea_obj$NES_neg), lower.tail = FALSE)*2
-               } else {
-                   pval_pos <- sum(null_es_pos < gsea_obj$ES_pos)/length(null_es_pos)
-                   pval_neg <- sum(null_es_neg > gsea_obj$ES_neg)/length(null_es_neg)
-                   if(pval_pos == 0) gsea_obj$pval_pos <- 1/length(null_es_pos) else gsea_obj$pval_pos <- pval_pos
-                   if(pval_neg == 0) gsea_obj$pval_neg <- 1/length(null_es_pos) else gsea_obj$pval_neg <- pval_pos
-               }
-           },
-           '1' = {
-               gsea_obj$NES_pos <- gsea_obj$ES_pos/abs(mean(gsea_obj$null_es_pos[gsea_obj$null_es_pos >= 0]))
-               gsea_obj$NES_neg <- gsea_obj$ES_neg/abs(mean(gsea_obj$null_es_neg[gsea_obj$null_es_neg < 0]))
+    if(gsea_obj$ES_pos >= 0) {
+       gsea_obj$NES_pos <- gsea_obj$ES_pos/mean(gsea_obj$null_es_pos[gsea_obj$null_es_pos >= 0])
+    } else gsea_obj$NES_pos <- gsea_obj$ES_pos/abs(mean(gsea_obj$null_es_pos[gsea_obj$null_es_pos < 0]))
 
-               if(analytical){
-                   gsea_obj$pval_pos <- pnorm(abs(gsea_obj$NES_pos), lower.tail = FALSE)*2
-                   gsea_obj$pval_neg <- pnorm(abs(gsea_obj$NES_neg), lower.tail = FALSE)*2
-               } else {
-                   pval_pos <- sum(null_es_pos > gsea_obj$ES_pos)/length(null_es_pos)
-                   pval_neg <- sum(null_es_neg < gsea_obj$ES_neg)/length(null_es_neg)
-                   if(pval_pos == 0) gsea_obj$pval_pos <- 1/length(null_es_pos) else gsea_obj$pval_pos <- pval_pos
-                   if(pval_neg == 0) gsea_obj$pval_neg <- 1/length(null_es_pos) else gsea_obj$pval_neg <- pval_pos
-               }
-           })
+    if(gsea_obj$ES_neg >= 0) {
+        gsea_obj$NES_neg <- gsea_obj$ES_neg/mean(gsea_obj$null_es_neg[gsea_obj$null_es_neg >= 0])
+    } else gsea_obj$NES_neg <- gsea_obj$ES_neg/abs(mean(gsea_obj$null_es_neg[gsea_obj$null_es_neg < 0]))
+
+    # derive p-value, either analytically or permutation based (default)
+
+    if(analytical){
+        gsea_obj$pval_pos <- pnorm(abs(gsea_obj$NES_pos), lower.tail = FALSE)*2
+        gsea_obj$pval_neg <- pnorm(abs(gsea_obj$NES_neg), lower.tail = FALSE)*2
+    } else {
+        # permutation again depends on signs of enrichment scores
+        if(gsea_obj$ES_pos >= 0) {
+            pval_pos <- sum(null_es_pos > gsea_obj$ES_pos)/length(null_es_pos)
+        } else pval_pos <- sum(null_es_pos < gsea_obj$ES_pos)/length(null_es_pos)
+
+        if(gsea_obj$ES_neg >= 0) {
+            pval_neg <- sum(null_es_neg > gsea_obj$ES_neg)/length(null_es_neg)
+        } else pval_neg <- sum(null_es_neg < gsea_obj$ES_neg)/length(null_es_neg)
+
+        # adjust if pval is 0
+        if(pval_pos == 0) gsea_obj$pval_pos <- 1/length(null_es_pos) else gsea_obj$pval_pos <- pval_pos
+        if(pval_neg == 0) gsea_obj$pval_neg <- 1/length(null_es_neg) else gsea_obj$pval_neg <- pval_neg
+    }
 
     return(gsea_obj)
 })

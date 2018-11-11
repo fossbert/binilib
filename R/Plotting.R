@@ -92,4 +92,202 @@ legend_col <- function(col, level, side = 4){
 }
 
 
+#' Split violin plot
+#'
+#' This type of plot takes a numeric vector and splits it twice. Once using a first categorical variable with
+#' any number of levels and then and then a second time using a second categorical variable with
+#' exactly TWO levels. A density curve will be estimated and side-by-side violin plots will be produced.
+#'
+#' @param x a numeric variable to be split in two ways
+#' @param s1 categorical variable used for the first split
+#' @param s2 categorical variable used for the second split
+#' @param cols vector of lenght 2 indicating colors in R (hex, integer or plane name)
+#' @param ylb default for y-axis, could be changed iy you know the nature of x (e.g. Z-score)
+#' @param rug logical, whether to plot the data points as a rug
+#' @return a plot will be send to the graphics output
+#' @export
 
+split_violin <- function(x, s1, s2,
+                         cols = c('cornflowerblue', 'salmon'),
+                         ylb = '',
+                         rug = FALSE,
+                         legpos = 'topleft',
+                         ...) {
+
+    omar <- par()$mar
+    omgp <- par()$mgp
+
+    s1 <- factor(s1)
+    s2 <- factor(s2)
+
+    # check whether input is legit
+    if (length(x) != length(s1) || length(x) != length(s2)) {
+        stop("Careful, length of input vectors don't match up")
+    }
+    if (length(levels(s2)) != 2) stop("Sorry friend, s2 MUST have 2 levels")
+
+    # split both x and s2 by s1
+    l1 <- split(x = x, f = s1)
+    splitlist <- split(s2, f = s1)
+
+    # second split and density estimates
+    l2 <- lapply(seq_along(l1), function(i) {
+
+        tmp <- split(l1[[i]], splitlist[[i]])
+
+        lapply(tmp, function(j) {
+            tmp2 <- density(j, na.rm = TRUE)
+            list(x = tmp2$x, y = tmp2$y,
+                 mode_x = tmp2$x[which.max(tmp2$y)],
+                 mode_y = tmp2$y[which.max(tmp2$y)],
+                 original_x = j)
+        })
+
+    })
+    names(l2) <- names(l1)
+
+    # prepare plotting - careful x is y and y is x
+
+    # find max sum of consecutive modes in plot
+    ml <- vapply(l2, function(i) i[[1]][['mode_y']], FUN.VALUE = numeric(1))
+    mr <- vapply(l2, function(i) i[[2]][['mode_y']], FUN.VALUE = numeric(1))
+    xm <- max(ml[-1] + mr[-length(mr)], na.rm = TRUE) + .25
+
+    at <- seq(from = 1, by = xm, length.out = length(l2))
+    xr <- range(density(x)$x)
+    xr_simple <- seq(round(xr[1]), round(xr[2]), by = 1)
+
+    if (ml[1] > 0.5 || mr[length(mr)] > 0.5) {
+        xside <- max(c(ml[1], mr[length(mr)]), na.rm = TRUE)
+        yr <- c(min(at)-xside, max(at)+xside)
+    } else {
+        yr <- c(min(at)-0.5, max(at)+0.5)
+    }
+
+
+    par(mar = c(3.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
+    plot(0, xaxt='n',
+         ylab = ylb,
+         xlab = '',
+         xlim = yr,
+         ylim = xr, ...)
+
+    # side-by-side violin plots
+    for (i in seq_along(l2)){
+
+        tmp <- l2[[i]]
+
+        # left hand side
+        x1 <- tmp[[1]][['x']]
+        y1 <- tmp[[1]][['y']]
+        my1 <- tmp[[1]][['mode_y']]
+        mx1 <- tmp[[1]][['mode_x']]
+
+        polygon(x = c(at[i]-y1, rep(at[i], length(y1))),
+                y = c(x1, rev(x1)), col = cols[1])
+        lines(x = c(at[i]-my1, at[i]), y = rep(mx1, 2))
+
+        # right hand side
+        x2 <- tmp[[2]][['x']]
+        y2 <- tmp[[2]][['y']]
+        my2 <- tmp[[2]][['mode_y']]
+        mx2 <- tmp[[2]][['mode_x']]
+        polygon(x = c(at[i]+y2, rep(at[i], length(y2))),
+                y = c(x2, rev(x2)), col = cols[2])
+        lines(x = c(at[i]+my2, at[i]), y = rep(mx2, 2))
+
+        if (rug) {
+            yrug <- quantile(c(y1, y2), .25)
+            orgs1 <- tmp[[1]][['original_x']]
+            for (k in seq_along(orgs1)) {
+                lines(x = c(at[i]-yrug, at[i]), y = rep(orgs1[k], 2))
+            }
+            orgs2 <- tmp[[2]][['original_x']]
+            for (k in seq_along(orgs2)) {
+                lines(x = c(at[i]+yrug, at[i]), y = rep(orgs2[k], 2))
+            }
+        }
+
+    }
+    axis(side = 1, at = at, labels = names(l2))
+    legend(legpos, legend = levels(s2), pch = 15, col = cols)
+
+    par(mar = omar, mgp = omgp, las = 0) # restore old settings
+
+}
+
+
+# Plotting functions
+plothm. <- function(x, color=c("royalblue","firebrick2"), gama=1, grid=T, scmax=0, box=TRUE, ...) {
+    coli <- colorScale(x=filterRowMatrix(x, nrow(x):1), color=color, gama=gama, scmax=scmax)
+    image(1:ncol(x), 1:nrow(x), t(matrix(1:(ncol(x)*nrow(x)), nrow(x), ncol(x))), col=coli, ylab="", xlab="", axes=F, ...)
+    if (box) box()
+    if (grid) grid(ncol(x), nrow(x), col="black", lty=1)
+}
+
+#' colorScale
+#'
+#' This function generates a color scale
+#'
+#' @param x Vector or matrix of numeric values
+#' @param color Vector of character strings indicating the colors for the scale. Up to three colors can be defined. While is used for the missing color
+#' @param gama Number indicating the gama transformation
+#' @param alpha Number between 0 and 1 indicating the transparency of the color (1 for absolute color)
+#' @param scmax Number indicating the maximum value for the scale
+#' @param nacol Character string indicating the color for missing values
+#' @return Vector of colors
+#' @export
+colorScale <- function(x, color=c("royalblue","firebrick2"), gama=1, alpha=1, scmax=0, nacol="grey80") {
+    if (length(color)==1) color <- c(color, "white", color)
+    if (length(color)==2) color <- c(color[1], "white", color[2])
+    if (scmax==0) scmax <- max(abs(x), na.rm=T)
+    pos <- which(abs(x) > scmax)
+    if (length(pos)>0) x[pos] <- scmax*sign(x[pos])
+    x <- abs(x/scmax)^gama*sign(x)
+    color <- t(col2rgb(color))
+    col <- sapply(x, function(x, color) {
+        colSums(color*c(abs(x)*(x<0), 1-abs(x), x*(x>0)))
+    }, color=color/255)
+    pos <- which(colSums(is.na(col))>0)
+    col[is.na(col)] <- 0
+    col <- apply(col, 2, function(x, alpha) rgb(x[1], x[2], x[3], alpha=alpha), alpha=alpha)
+    col[pos] <- nacol
+    return(col)
+}
+
+#' Plot heatmap
+#'
+#' This function produce a heatmap plot from a numerical matrix
+#'
+#' @param x Numerical matrix
+#' @param color Two character strings vector describing the colors for the heatmap
+#' @param gama Number, indicating the exponential transformation for the color scale
+#' @param cex Number indicating the magnification factor for the labels
+#' @param grid Logical, whether a grid should be ploted
+#' @param scale Number between 0 and .9 indicating the proportion of vertical space used to draw the color scale
+#' @param scmax Optional number indicating the maximum value to be allowed for the heatmap
+#' @param box Logical, whether to draw a box around the plot
+#' @param ... Additional parameters to pass to the plot function
+#' @return Nothing, a heatmap is produced in the default output device
+#' @export
+
+plothm <- function(x, color=c("royalblue","firebrick2"), gama=1, cex=1, grid=T, scale=F, scmax=0, box=TRUE, ...) {
+    if (scale>0) {
+        if (scale==1) ff <- 6/(nrow(x)+5)
+        else ff <- scale
+        pari <- par("mai")
+        layout(matrix(1:2, 2, 1), h=c(1-ff, ff))
+        if (round(sum(pari-c(1.02, .82, .82, .42)), 2)==0) pari <- c(.2, .2, 1.2, 1.2)
+        par(mai=pari)
+        plothm.(x, color=color, gama=gama, scmax=scmax, box=box, ...)
+        axis(4, nrow(x):1, rownames(x), tick=F, line=0, las=2, adj=0, cex.axis=cex)
+        axis(3, 1:ncol(x), colnames(x), tick=F, line=0, las=2, adj=0, cex.axis=cex)
+        ra <- seq(-1, 1, length=100)
+        coli <- colorScale(x=ra, color=color, gama=gama, scmax=scmax)
+        par(mai=pari*c(0, 1, 0, 3)+c(.5, 0, .1, 0))
+        image(1:length(ra), 1, matrix(1:length(ra), length(ra), 1), col = coli, ylab = "", xlab = "", axes = F)
+        if (scmax==0) scmax <- max(abs(x), na.rm=T)
+        axis(1, seq(1, length(ra), length=5), round(seq(-scmax, scmax, length=5), 1), cex.axis=cex)
+    }
+    else plothm.(x=x, color=color, gama=gama, grid=grid, scmax=scmax, box=box, ...)
+}

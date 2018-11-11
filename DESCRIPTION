@@ -8,7 +8,7 @@ Description: Convenience functions for getting stuff done in R.
 Encoding: UTF-8
 LazyData: true
 License: CC0
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Depends: tidyverse
 Imports: magrittr, methods, RColorBrewer, limma, stringr
 Collate: 
@@ -23,5 +23,4 @@ Collate:
     'geneConversions.R'
     'helper_functions.R'
     'reorder_within.R'
-    'utils.R'
     'viper-helpers.R'

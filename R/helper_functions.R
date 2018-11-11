@@ -30,7 +30,7 @@ extract_features <- function(expmat, reflist, margin = 1) {
 }
 
 
-#' Collapsing many-to-one relationships for gene expression matrices
+#' Collapsing many-to-one relationships for gene expression matrices on per sample basis
 #'
 #' @param expmat matrix whose rows can partly be summarized using a factor
 #' @param fac factor used for summarizing rows
@@ -39,7 +39,7 @@ extract_features <- function(expmat, reflist, margin = 1) {
 #' @return new matrix with rows or columns in order of the reference list
 #' @export
 
-collapse_multi <- function(expmat, fac, method = c("mean", "median", "sum"), verbose = TRUE) {
+collapse_multi <- function(expmat, fac, method = c("mean", "median", "max", "sum"), verbose = TRUE) {
 
     method <- match.arg(method)
     # ensure appropriate data types
@@ -59,9 +59,10 @@ collapse_multi <- function(expmat, fac, method = c("mean", "median", "sum"), ver
     # message methods of collapsing, number of samples and date
     for (i in 1:ncol(mat)) {
         switch(method,
-               mean={outmat[,i] <- tapply(mat[,i], fac, mean)},
-               median={outmat[,i] <- tapply(mat[,i], fac, median)},
-               sum={outmat[,i] <- tapply(mat[,i], fac, sum)})
+               mean={outmat[,i] <- tapply(mat[,i], fac, mean, na.rm = TRUE)},
+               median={outmat[,i] <- tapply(mat[,i], fac, median, na.rm = TRUE)},
+               max={outmat[,i] <- tapply(mat[,i], fac, max, na.rm = TRUE)},
+               sum={outmat[,i] <- tapply(mat[,i], fac, sum, na.rm = TRUE)})
         if (is(pb, "txtProgressBar")) setTxtProgressBar(pb, i)
     }
 
@@ -125,9 +126,6 @@ write_matrix <- function(eset, path) {
 #' @param f the function to be applied between each pair of elements of the list. Function needs to take two arguments: i and j.
 #' @return list object with the results
 #' @export
-#' @examples
-#' lapply_pair(x = l, f = function(i, j) diag(cor(i, j)))
-#' This call will return the column-wise Pearson correlation between each pair
 
 lapply_pair <- function(x, f, ...) {
 
@@ -196,5 +194,73 @@ replace_missings <- function(x, replacement = 0) {
     x
 
 }
+
+#' Stouffer integration of Z scores
+#'
+#' This function integrates Z-scores (i.e. NES) by the Stouffer method
+#'
+#' @param x a vector of Z scores
+#' @return Z an integrated Z score
+#' @examples
+#' zs <-c(1,3,5,2,3)
+#' stouffer(zs)
+#' @export
+stouffer_z <- function(x, weights = NULL) {
+
+    if(is.null(weights)) {
+        Z <- sum(x)/sqrt(length(x))
+    } else {
+        if(length(weights) != length(x)) stop('Will need the same number of weights as Z-scores, my friend !')
+        Z <- sum(weights * x)/sqrt(sum(weights^2))
+    }
+    return(Z)
+}
+
+
+#' Find best probe if there are multiple per gene
+#'
+#' It will return the probe with the highest summary measure (IQR, mean, etc.)
+#'
+#' @param expmat matrix whose rows can partly be summarized using a factor
+#' @param fac factor used for summarizing rows
+#' @param method method of summary, defaults to IQR
+#' @return new matrix where rownames correspond to factor level names (e.g. gene symbols)
+#' @export
+pick_probes <- function(expmat, fac, method = c('IQR', 'mad', 'mean', 'median')) {
+
+    method <- match.arg(method)
+
+    # ensure appropriate data types
+    mat <- as.matrix(expmat)
+    fac <- as.factor(fac)
+
+    if(nrow(mat) != length(fac)) stop('factor length must match row number!')
+
+    switch(method,
+           IQR={smr <- apply(mat, 1, IQR, na.rm = FALSE)},
+           mad={smr <- apply(mat, 1, mad, na.rm = FALSE)},
+           mean={smr <- rowMeans(mat, na.rm = FALSE)},
+           median={smr <- apply(mat, 1, median, na.rm = FALSE)})
+    # find max of summary measure
+    keep <- vapply(split(smr, fac), function(i) names(i)[which.max(i)], FUN.VALUE = character(1))
+    # return subset matrix
+    tmp <- mat[keep, ]
+    rownames(tmp) <- levels(fac)
+    tmp
+}
+
+
+#' Convert p-values from a two tailed test to quantiles of the normal distribution
+#'
+#' @param pvals numeric vector of raw p-values
+#' @param stats numeric vector of test statistics, e.g. t-statistics (for the sign)
+#' @return numeric vector of Z-scores
+#' @export
+p2z <- function(pvals, stats) {
+
+    qnorm(pvals/2, lower.tail = FALSE) * sign(stats)
+
+    }
+
 
 
