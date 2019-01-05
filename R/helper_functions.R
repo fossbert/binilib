@@ -277,9 +277,8 @@ order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
 
     # Some safety nets
     factorCol <- as.factor(factorCol)
-    factorRow <- as.factor(factorRow)
     stopifnot(ncol(expmat) == length(factorCol))
-    if(!is.null(factorRow)) stopifnot(ncol(expmat) == length(factorCol))
+    if(!is.null(factorRow)) stopifnot(nrow(expmat) == length(factorRow))
 
     # number of groups/levels
     lvls <- levels(factorCol)
@@ -290,6 +289,7 @@ order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
     })
 
     # now it'll depend on the number of levels for a factors
+    # for the ones in the middle (if there is one), order will be randomized
     if(length(lvls) == 2) {
         submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
         submats[[2]] <- submats[[2]][,order(colMeans(submats[[2]]))]
@@ -305,6 +305,7 @@ order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
 
     res <- do.call(c, lapply(submats, function(i) colnames(i)))
 
+    # if(!is.null()) TO BE CONTINUED
     return(expmat[, res])
 
 }
