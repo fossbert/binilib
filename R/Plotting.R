@@ -102,7 +102,7 @@ legend_col <- function(col, level, side = 4){
 #' @param s1 categorical variable used for the first split
 #' @param s2 categorical variable used for the second split
 #' @param cols vector of lenght 2 indicating colors in R (hex, integer or plane name)
-#' @param ylb default for y-axis, could be changed iy you know the nature of x (e.g. Z-score)
+#' @param ylb default for y-axis, could be changed if you know the nature of x (e.g. Z-score)
 #' @param rug logical, whether to plot the data points as a rug
 #' @return a plot will be send to the graphics output
 #' @export
@@ -146,7 +146,7 @@ split_violin <- function(x, s1, s2,
     })
     names(l2) <- names(l1)
 
-    # prepare plotting - careful x is y and y is x
+    # prepare plotting - careful: x is y and y is x
 
     # find max sum of consecutive modes in plot
     ml <- vapply(l2, function(i) i[[1]][['mode_y']], FUN.VALUE = numeric(1))

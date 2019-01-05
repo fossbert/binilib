@@ -16,7 +16,7 @@ split_violin(x, s1, s2, cols = c("cornflowerblue", "salmon"), ylb = "",
 
 \item{cols}{vector of lenght 2 indicating colors in R (hex, integer or plane name)}
 
-\item{ylb}{default for y-axis, could be changed iy you know the nature of x (e.g. Z-score)}
+\item{ylb}{default for y-axis, could be changed if you know the nature of x (e.g. Z-score)}
 
 \item{rug}{logical, whether to plot the data points as a rug}
 }

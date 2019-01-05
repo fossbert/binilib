@@ -263,4 +263,48 @@ p2z <- function(pvals, stats) {
     }
 
 
+#' Order the columns of a heatmap within the constraints of a factor
+#' Generally, a left to right gradient will be achieved where column means will
+#' increase from left to right.
+#'
+#' @param expmat expression matrix
+#' @param factorCol factor with metadata information for each column in the expression matrix
+#' @param factorRow factor with metadata information for each row in the expression matrix
+#' @return ordered expression matrix ready for heatmaps (do not cluster columns or rows, respectively)
+#' @export
 
+order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
+
+    # Some safety nets
+    factorCol <- as.factor(factorCol)
+    factorRow <- as.factor(factorRow)
+    stopifnot(ncol(expmat) == length(factorCol))
+    if(!is.null(factorRow)) stopifnot(ncol(expmat) == length(factorCol))
+
+    # number of groups/levels
+    lvls <- levels(factorCol)
+
+    # split the expression matrix
+    submats <- lapply(lvls, function(i){
+        expmat[, factorCol == i]
+    })
+
+    # now it'll depend on the number of levels for a factors
+    if(length(lvls) == 2) {
+        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
+        submats[[2]] <- submats[[2]][,order(colMeans(submats[[2]]))]
+    } else if (length(lvls) == 3){
+        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
+        submats[[2]] <- submats[[2]][,sample(seq(ncol(submats[[2]])))]
+        submats[[3]] <- submats[[3]][,order(colMeans(submats[[3]]))]
+    } else {
+        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
+        submats[2:(length(lvls)-1)] <- lapply(submats[2:(length(lvls)-1)], function(i) i[,sample(seq(ncol(i)))])
+        submats[[length(lvls)]] <- submats[[length(lvls)]][,order(colMeans(submats[[length(lvls)]]))]
+    }
+
+    res <- do.call(c, lapply(submats, function(i) colnames(i)))
+
+    return(expmat[, res])
+
+}
