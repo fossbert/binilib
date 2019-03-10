@@ -46,30 +46,38 @@ tpm <- function(counts, log = TRUE, offset = 0.25,
 #'
 #' @param counts Matrix containing raw read counts (generally).
 #' @param tpm logical, adjust for gene length before rank transformation
+#' @param pmOne logical, whether to rescale values so they are distributed between -1 and +1
+#' @param gausstrans logical, whether to rescale the values to quantiles of the gaussian distribution
+#' @parap ... further arguments passed to the tpm function
 #' @return basic rank normalized matrix.
 #' @export
 
-basic_rank_norm <- function(counts, tpm = TRUE) {
+basic_rank_norm <- function(counts,
+                            tpm = TRUE,
+                            pmOne = FALSE,
+                            gausstrans = FALSE,
+                            ...) {
 
-    if (tpm) d1 <- tpm(counts, log = FALSE) else d1 <- counts
+    if (tpm) d1 <- tpm(counts, log = FALSE, ...) else d1 <- counts
 
-    # rank transform each sample/column
-    d1 <- t(t(apply(d1, 2, rank, na.last="keep"))/(colSums(!is.na(counts))+1))
-    rm(counts)
-    gc()
-    # rank transform each gene/row
-    d2 <- t(apply(d1, 1, rank, na.last="keep"))/(rowSums(!is.na(d1))+1)
+    if(pmOne){
+        # rank transform and distributes between -1 and 1
+        # first for columns
+        d1 <- apply(d1, 2, rank)/(nrow(d1) + 1)*2-1
+        # then for genes
+        d2 <- t(apply(d1, 1, rank)/(ncol(d1) + 1)*2-1)
+
+        # possibly transform
+        if(gausstrans) d2 <- qnorm(d2/2+.5)
+
+    } else {
+        # rank transform each sample/column
+        d1 <- t(t(apply(d1, 2, rank, na.last="keep"))/(colSums(!is.na(counts))+1))
+        # rank transform each gene/row
+        d2 <- t(apply(d1, 1, rank, na.last="keep"))/(rowSums(!is.na(d1))+1)
+    }
     rownames(d2) <- rownames(d1)
     return(d2)
-    # rank transform and distributes between -1 and 1
-    # first for columns
-    #d1 <- apply(d1, 2, rank)/(nrow(d1) + 1)*2-1
-    # then for genes
-    #d2 <- t(apply(d1, 1, rank)/(ncol(d1) + 1)*2-1)
-
-    # possibly transform
-    # if (gausstrans) d2 <- qnorm(d2/2+.5)
-
 }
 
 #' Rescale a numeric vector to range between 0 and 1

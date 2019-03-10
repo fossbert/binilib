@@ -4,12 +4,17 @@
 \alias{basic_rank_norm}
 \title{Basic rank normalization of a gene expression matrix}
 \usage{
-basic_rank_norm(counts, tpm = TRUE)
+basic_rank_norm(counts, tpm = TRUE, pmOne = FALSE,
+  gausstrans = FALSE, ...)
 }
 \arguments{
 \item{counts}{Matrix containing raw read counts (generally).}
 
 \item{tpm}{logical, adjust for gene length before rank transformation}
+
+\item{pmOne}{logical, whether to rescale values so they are distributed between -1 and +1}
+
+\item{gausstrans}{logical, whether to rescale the values to quantiles of the gaussian distribution}
 }
 \value{
 basic rank normalized matrix.
