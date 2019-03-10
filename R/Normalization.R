@@ -53,8 +53,8 @@ tpm <- function(counts, log = TRUE, offset = 0.25,
 #' @export
 
 basic_rank_norm <- function(counts,
-                            tpm = TRUE,
-                            pmOne = FALSE,
+                            tpm = FALSE,
+                            pmOne = TRUE,
                             gausstrans = FALSE,
                             ...) {
 
