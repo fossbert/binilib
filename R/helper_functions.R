@@ -309,3 +309,45 @@ order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
     return(expmat[, res])
 
 }
+
+
+#' Order the columns of a heatmap within the constraints of a factor
+#' Generally, a left to right gradient will be achieved where column means will
+#' increase from left to right.
+#'
+#' @param genelist character vector of gene identifiers
+#' @param genesets named list of character vectors
+#' @return a tibble of genes and gene sets they appear in
+#' @export
+
+gs_ovlp <- function(genelist, genesets){
+
+    # safety net making sure that at least one of the genes is in the gene sets
+    # AND that the geneset list is named
+    stopifnot(any(genelist %in% unlist(genesets, use.names = FALSE)))
+    stopifnot(!is.null(names(genesets)))
+
+    # loop through gene list and gene sets
+    tmp <- vapply(genelist, function(i){
+
+        vapply(seq(length(genesets)), function(j){
+            i %in% genesets[[j]]
+
+        }, FUN.VALUE = logical(1))
+
+    }, FUN.VALUE = logical(length(genesets)))
+
+    # create list of gene set names and label those with zero occurences
+    tmp2 <- apply(tmp, 2, function(i){
+        names(genesets)[i]
+    })
+
+    idx <- which(purrr::map_int(tmp2, length) == 0)
+    tmp2[idx] <- NA_character_
+
+    # create a tibble and return it
+    tibble::tibble(gene = rep(names(tmp2), purrr::map_int(tmp2, length)),
+                   pw = unlist(purrr::map(tmp2, ~ return(.)), use.names = FALSE)) %>%
+        dplyr::filter(!is.na(pw))
+
+}
