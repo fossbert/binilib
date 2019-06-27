@@ -2,9 +2,7 @@
 % Please edit documentation in R/helper_functions.R
 \name{gs_ovlp}
 \alias{gs_ovlp}
-\title{Order the columns of a heatmap within the constraints of a factor
-Generally, a left to right gradient will be achieved where column means will
-increase from left to right.}
+\title{Score character vectors of genes and their overlap with certain gene sets}
 \usage{
 gs_ovlp(genelist, genesets)
 }
@@ -17,7 +15,5 @@ gs_ovlp(genelist, genesets)
 a tibble of genes and gene sets they appear in
 }
 \description{
-Order the columns of a heatmap within the constraints of a factor
-Generally, a left to right gradient will be achieved where column means will
-increase from left to right.
+Score character vectors of genes and their overlap with certain gene sets
 }
