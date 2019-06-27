@@ -15,6 +15,8 @@ basic_rank_norm(counts, tpm = FALSE, pmOne = TRUE,
 \item{pmOne}{logical, whether to rescale values so they are distributed between -1 and +1}
 
 \item{gausstrans}{logical, whether to rescale the values to quantiles of the gaussian distribution}
+
+\item{...}{further arguments passed to the tpm function}
 }
 \value{
 basic rank normalized matrix.

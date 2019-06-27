@@ -18,6 +18,8 @@ gsea_null(gsea_obj, ...)
   analytical = FALSE, verbose = TRUE)
 }
 \arguments{
+\item{gsea_obj}{a gsea object as returned by gsea1T or gsea2T/gsea_regulon}
+
 \item{...}{Additional parameters added to keep compatibility}
 
 \item{w}{numeric indicating the weights used for GSEA (defaults to 1)}

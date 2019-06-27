@@ -72,7 +72,7 @@ gsea2T_null <- function(signature,
 #' side of the null distribution. For two-tailed GSEA, the null model is calculated accordingly and
 #' separate NES and p-values are provided for each gene set.
 #'
-#' @param gsea_obj
+#' @param gsea_obj a gsea object as returned by gsea1T or gsea2T/gsea_regulon
 #' @param w numeric indicating the weights used for GSEA (defaults to 1)
 #' @param perm integer indicating the number of permutations to carry out (defaults to 1000)
 #' @param seed integer for random number generation during the permutation process (defaults to 42)
@@ -86,7 +86,7 @@ setGeneric("gsea_null", function(gsea_obj, ...) standardGeneric("gsea_null"))
 
 #' @rdname gsea_null-methods
 #' @aliases gsea_null,gsea1-method
-setMethod("gsea_null", "gsea1", function(gsea_obj,
+setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
                                          w = 1,
                                          perm = 1000,
                                          seed = 42,
@@ -152,7 +152,7 @@ setMethod("gsea_null", "gsea1", function(gsea_obj,
 
 #' @rdname gsea_null-methods
 #' @aliases gsea_null, gsea2-method
-setMethod("gsea_null", "gsea2", function(gsea_obj,
+setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
                                          w = 1,
                                          perm = 1000,
                                          seed = 42,

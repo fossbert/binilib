@@ -48,7 +48,7 @@ tpm <- function(counts, log = TRUE, offset = 0.25,
 #' @param tpm logical, adjust for gene length before rank transformation
 #' @param pmOne logical, whether to rescale values so they are distributed between -1 and +1
 #' @param gausstrans logical, whether to rescale the values to quantiles of the gaussian distribution
-#' @parap ... further arguments passed to the tpm function
+#' @param ... further arguments passed to the tpm function
 #' @return basic rank normalized matrix.
 #' @export
 

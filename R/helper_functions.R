@@ -137,7 +137,7 @@ lapply_pair <- function(x, f, ...) {
 
         for(j in seq_along(x)) {
             if (i == j) next
-            id <- names(x)[j]
+            id <- nom[j]
             out[[i]][[id]] <- f(x[[i]], x[[j]], ...)
         }
 
@@ -158,7 +158,8 @@ lapply_pair <- function(x, f, ...) {
 #' @export
 
 randomize_eset <- function(eset, seed = 1, margin = 2, ...) {
-         set.seed(1)
+
+        set.seed(seed)
 
         if (margin == 2) {
 
@@ -311,9 +312,7 @@ order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
 }
 
 
-#' Order the columns of a heatmap within the constraints of a factor
-#' Generally, a left to right gradient will be achieved where column means will
-#' increase from left to right.
+#' Score character vectors of genes and their overlap with certain gene sets
 #'
 #' @param genelist character vector of gene identifiers
 #' @param genesets named list of character vectors
@@ -350,4 +349,54 @@ gs_ovlp <- function(genelist, genesets){
                    pw = unlist(purrr::map(tmp2, ~ return(.)), use.names = FALSE)) %>%
         dplyr::filter(!is.na(pw))
 
+}
+
+
+#' For two matched matrices, compute correlation (Spearman) between two related genes with the first
+#' coming from matrix A and the second coming from matrix B.
+#'
+#' @param mat1 numeric matrix
+#' @param mat2 numeric matrix
+#' @param lrlist named list containing one or multiple strings
+#' @return a tibble with genes from mat1 matched to those from mat2 and their spearman correlation
+#' @export
+
+
+lrcor <- function(mat1, mat2, lrlist){
+
+
+    # determine activity correlations between ligands in mat1 and receptors in mat2
+    tmp <- purrr::map(names(lrlist), function(i){
+
+        if(i %in% rownames(mat1)) {
+
+            purrr::map_dbl(lrlist[[i]], function(j){
+                if(j %in% rownames(mat2)) {
+                    stats::cor(mat1[i, ], mat2[j, ], method = 'spearman')
+                } else NA_real_
+            })
+        }
+    })
+
+    # clean up
+    names(tmp) <- names(lrlist)
+    tmp <- tmp[map_int(tmp, length) > 0]
+    tmp1 <- purrr::map(names(tmp), ~ {
+
+        sub <- tmp[[.]]
+        names(sub) <- ltor[[.]]
+        sub[!is.na(sub)]
+    })
+    names(tmp1) <- names(tmp)
+    tmp1 <- tmp1[purrr::map_int(tmp1, length) > 0]
+    tmp1
+
+    l2df(tmp1)
+}
+
+
+l2df <- function(list) {
+    tibble(ligand = rep(names(list), map_int(list, length)),
+           receptor = unlist(map(list, ~ names(.)), use.names = FALSE),
+           rho = unlist(list, use.names = FALSE))
 }
