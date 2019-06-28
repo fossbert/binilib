@@ -8,11 +8,7 @@ Information on a more complete set of 18548 genes for which the Jax Informatics 
 provides mappings between human and mouse genes. This includes human genes for which there are
 multiple corresponding mouse genes, and vice versa, mouse genes with multiple corresponding human
 genes.}
-\format{List with two elements (tibble) containing gene \strong{symbol} and \strong{entrez id} data, respectively
-\describe{
-\item{Symbol}{tibble with two columns/variables of mouse and human gene symbols}
-\item{Entrez}{tibble with two columns/variables of mouse and human entrez ids}
-}}
+\format{List with two elements (tibble) containing gene \strong{symbol} and \strong{entrez id} data, respectively}
 \source{
 \url{http://www.informatics.jax.org/homology.shtml}
 }

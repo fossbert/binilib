@@ -106,7 +106,6 @@ NULL
 #' }
 NULL
 
-
 #' Full homology data as provided by Jax
 #' Information on a more complete set of 18548 genes for which the Jax Informatics Portal
 #' provides mappings between human and mouse genes. This includes human genes for which there are
@@ -118,9 +117,15 @@ NULL
 #' @author HCM
 #' @keywords data
 #' @format List with two elements (tibble) containing gene \strong{symbol} and \strong{entrez id} data, respectively
-#' \describe{
-#' \item{Symbol}{tibble with two columns/variables of mouse and human gene symbols}
-#' \item{Entrez}{tibble with two columns/variables of mouse and human entrez ids}
-#' }
 #' @source \url{http://www.informatics.jax.org/homology.shtml}
+NULL
+
+#' Information on ligands and receptors
+#' As derived from Ramilowski et al., Nature Communications, 2016. PMID: 26198319.
+#'
+#' @name ligandsReceptors
+#' @docType data
+#' @author HCM
+#' @keywords data
+#' @format tibble with information on ligands and their receptors
 NULL
