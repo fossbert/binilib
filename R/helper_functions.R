@@ -384,7 +384,7 @@ lrcor <- function(mat1, mat2, lrlist){
     tmp1 <- purrr::map(names(tmp), ~ {
 
         sub <- tmp[[.]]
-        names(sub) <- ltor[[.]]
+        names(sub) <- lrlist[[.]]
         sub[!is.na(sub)]
     })
     names(tmp1) <- names(tmp)
