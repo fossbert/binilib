@@ -129,3 +129,14 @@ NULL
 #' @keywords data
 #' @format tibble with information on ligands and their receptors
 NULL
+
+
+#' Information on source gene sets of MSigDb Hallmark collection
+#' See Liberzon, Cell Syst, 2015 for details. PMID: 26771021
+#'
+#' @name hallmarkFounders
+#' @docType data
+#' @author HCM
+#' @keywords data
+#' @format list of lists: for 50 Hallmark gene sets, one list each comprising all founders
+NULL
