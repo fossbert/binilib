@@ -94,16 +94,14 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
                                          verbose = TRUE) {
 
     signature <- gsea_obj$signature
-    gS <- names(signature)[gsea_obj$gs_idx]
+    gs_size <- length(gsea_obj$gs_idx)
 
     set.seed(seed)
 
     # set up permutations
-    null_list <- lapply(1:perm, function(i, signature){
-        tmp <- signature
-        names(tmp) <- sample(names(signature))
-        tmp
-    }, signature = signature)
+    gs0 <- vapply(seq(perm), function(i){
+        sample(names(signature), size = gs_size)
+    }, FUN.VALUE = character(length(gz_size)))
 
     # message date and what's going on
     if (verbose) {
@@ -115,13 +113,13 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
     if(!any(gS %in% names(signature))) stop('Gene set names could not be found in signature!', call. = FALSE)
 
     # loop through permutations and calculate enrichment scores
-    null_es <- vapply(seq_along(null_list), function(i, gS, w){
+    null_es <- vapply(seq_along(gs0), function(i, signature, w){
 
         if (!is.null(pb)) setTxtProgressBar(pb, i)
 
-        gsea1T(signature = null_list[[i]], gS = gS, weight = w, onlyES = TRUE)
+        gsea1T(signature = signature, gS = gs0[[i]], weight = w, onlyES = TRUE)
 
-    }, FUN.VALUE = numeric(1), gS = gS, w = w)
+    }, FUN.VALUE = numeric(1), signature = signature, w = w)
 
     # assign null distribution of enrichment scores
     gsea_obj$null_es <- null_es
@@ -138,13 +136,10 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
         gsea_obj$pval <- signif(pnorm(abs(gsea_obj$NES), lower.tail = FALSE)*2, 3)
     } else { # 2.) permutation based, one-tailed
         if(gsea_obj$ES >= 0) {
-            pval <- sum(null_es > gsea_obj$ES)/length(null_es)
+            pval <- (sum(null_es > gsea_obj$ES)+1)/(length(null_es)+1)
         } else {
-            pval <- sum(null_es < gsea_obj$ES)/length(null_es)
+            pval <- (sum(null_es < gsea_obj$ES)+1)/(length(null_es)+1)
         }
-        # adjust if p-value is 0
-        if(pval == 0) gsea_obj$pval <- 1/length(null_es) else gsea_obj$pval <- pval
-
     }
     return(gsea_obj)
 })
@@ -160,18 +155,20 @@ setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
                                          verbose = TRUE) {
 
     signature <- gsea_obj$signature
-    set_pos <- names(signature)[gsea_obj$gs_idx_pos]
-    set_neg <- names(signature)[gsea_obj$gs_idx_neg]
+    size_pos <- length(gsea_obj$gs_idx_pos)
+    size_neg <- length(gsea_obj$gs_idx_neg)
     # how was the signature sorted, decreasing or increasing ?
     sigsort <- as.character(sign(signature[1]))
     set.seed(seed)
 
     # set up permutations
-    null_list <- lapply(1:perm, function(i, signature){
-        tmp <- signature
-        names(tmp) <- sample(names(signature))
-        tmp
-    }, signature = signature)
+    gs0_pos <- vapply(seq(perm), function(i){
+        sample(names(signature), size = size_pos)
+    }, FUN.VALUE = character(length(size_pos)))
+
+    gs0_neg <- vapply(seq(perm), function(i){
+        sample(names(signature), size = size_neg)
+    }, FUN.VALUE = character(length(size_neg)))
 
     # message date and what's going on
     if (verbose) {
@@ -190,8 +187,8 @@ setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
 
         if (!is.null(pb)) setTxtProgressBar(pb, i)
 
-        null_es_pos[i] <- gsea1T(signature = null_list[[i]], gS = set_pos, weight = w, onlyES = TRUE)
-        null_es_neg[i] <- gsea1T(signature = null_list[[i]], gS = set_neg, weight = w, onlyES = TRUE)
+        null_es_pos[i] <- gsea1T(signature = signature, gS = gs0_pos, weight = w, onlyES = TRUE)
+        null_es_neg[i] <- gsea1T(signature = signature, gS = gs0_neg, weight = w, onlyES = TRUE)
     }
 
     gsea_obj$null_es_pos <- null_es_pos
@@ -215,18 +212,13 @@ setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
     } else {
         # permutation again depends on signs of enrichment scores
         if(gsea_obj$ES_pos >= 0) {
-            pval_pos <- sum(null_es_pos > gsea_obj$ES_pos)/length(null_es_pos)
-        } else pval_pos <- sum(null_es_pos < gsea_obj$ES_pos)/length(null_es_pos)
+            pval_pos <- (sum(null_es_pos > gsea_obj$ES_pos)+1)/(length(null_es_pos)+1)
+        } else pval_pos <- (sum(null_es_pos < gsea_obj$ES_pos)+1)/(length(null_es_pos)+1)
 
         if(gsea_obj$ES_neg >= 0) {
-            pval_neg <- sum(null_es_neg > gsea_obj$ES_neg)/length(null_es_neg)
-        } else pval_neg <- sum(null_es_neg < gsea_obj$ES_neg)/length(null_es_neg)
-
-        # adjust if pval is 0
-        if(pval_pos == 0) gsea_obj$pval_pos <- 1/length(null_es_pos) else gsea_obj$pval_pos <- pval_pos
-        if(pval_neg == 0) gsea_obj$pval_neg <- 1/length(null_es_neg) else gsea_obj$pval_neg <- pval_neg
+            pval_neg <- (sum(null_es_neg > gsea_obj$ES_neg)+1)/(length(null_es_neg)+1)
+        } else pval_neg <- (sum(null_es_neg < gsea_obj$ES_neg)+1)/(length(null_es_neg)+1)
     }
-
     return(gsea_obj)
 })
 
