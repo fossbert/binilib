@@ -101,7 +101,7 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
     # set up permutations
     gs0 <- vapply(seq(perm), function(i){
         sample(names(signature), size = gs_size)
-    }, FUN.VALUE = character(length(gz_size)))
+    }, FUN.VALUE = character(length(gs_size)))
 
     # message date and what's going on
     if (verbose) {
