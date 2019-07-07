@@ -1,68 +1,6 @@
 #' @include classes.R
 NULL
 
-#' Calculating a null distribution of enrichment scores for two-tail GSEA
-#'
-#' This function generates a GSEA null distribution of enrichment scores based on gene shuffling, i.e.
-#' the positions of genes in the signature are permuted rather than phenotype labels.
-#'
-#' @param signature named numeric vector of gene-level statistics
-#' @param set1 character vector of gene names of positive targets
-#' @param set2 character vector of gene names of negative targets
-#' @param w numeric indicating the weights used for GSEA (defaults to 1)
-#' @param perm integer indicating the number of permutations to carry out (defaults to 1000)
-#' @param seed integer for random number generation during the permutation process
-#' @param plot_hist logical on whether to plot a histogram of the permutation-based enrichment scores
-#' @param verbose logical on whether to message progress report
-#' @return A gsea_null object
-#' @export
-gsea2T_null <- function(signature,
-                        set1,
-                        set2,
-                        w = 1,
-                        perm = 1000,
-                        seed = 42,
-                        plot_hist = FALSE,
-                        verbose = TRUE) {
-
-    set.seed(seed)
-
-    # set up permutations
-    null_list <- lapply(1:perm, function(i, signature){
-        tmp <- signature
-        names(tmp) <- sample(names(signature))
-        tmp
-    }, signature = signature)
-
-    # message date and what's going on
-    if (verbose) {
-        message("\nCalculating null distribution of enrichment scores by gene shuffling.\nStarted at ", date())
-        pb <- txtProgressBar(max = length(null_list), style = 3)
-    } else pb <- NULL
-
-    # little safety net
-    if(!any(c(set1, set2) %in% names(signature))) stop('Gene set names could not be found in signature!', call. = FALSE)
-
-    # loop through permutations and calculate enrichment scores
-    null_es <- vapply(seq_along(null_list), function(i, set1, set2, w){
-
-        if (!is.null(pb)) setTxtProgressBar(pb, i)
-
-        gsea2ES(signature = null_list[[i]], set1, set2, weight = w)
-
-    }, FUN.VALUE = numeric(1), set1 = set1, set2 = set2, w = w)
-
-    if(plot_hist) graphics::hist(null_es, breaks = perm/10, main = '', xlab = 'Enrichment Score')
-
-    gsea_null <- list(null_es = null_es,
-                      pos_null_es = mean(null_es[null_es >= 0]),
-                      neg_null_es = mean(null_es[null_es < 0]))
-
-    class(gsea_null) <- "gsea_null2"
-    return(gsea_null)
-}
-
-
 #' GSEA null model
 #'
 #' This function generates a GSEA null distribution of enrichment scores based on gene shuffling, i.e.
@@ -99,21 +37,18 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
     set.seed(seed)
 
     # set up permutations
-    gs0 <- vapply(seq(perm), function(i){
+    gs0 <- lapply(seq(perm), function(i){
         sample(names(signature), size = gs_size)
-    }, FUN.VALUE = character(gs_size))
+    })
 
     # message date and what's going on
     if (verbose) {
         message("\nCalculating null distribution of enrichment scores by gene shuffling.\nStarted at ", date())
-        pb <- txtProgressBar(max = length(null_list), style = 3)
+        pb <- txtProgressBar(max = perm, style = 3)
     } else pb <- NULL
 
-    # little safety net
-    if(!any(gS %in% names(signature))) stop('Gene set names could not be found in signature!', call. = FALSE)
-
     # loop through permutations and calculate enrichment scores
-    null_es <- vapply(seq_along(gs0), function(i, signature, w){
+    null_es <- vapply(seq(perm), function(i, signature, w){
 
         if (!is.null(pb)) setTxtProgressBar(pb, i)
 
@@ -136,9 +71,9 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
         gsea_obj$pval <- signif(pnorm(abs(gsea_obj$NES), lower.tail = FALSE)*2, 3)
     } else { # 2.) permutation based, one-tailed
         if(gsea_obj$ES >= 0) {
-            pval <- (sum(null_es > gsea_obj$ES)+1)/(length(null_es)+1)
+            gsea_obj$pval <- (sum(null_es > gsea_obj$ES)+1)/(perm+1)
         } else {
-            pval <- (sum(null_es < gsea_obj$ES)+1)/(length(null_es)+1)
+            gsea_obj$pval <- (sum(null_es < gsea_obj$ES)+1)/(perm+1)
         }
     }
     return(gsea_obj)
@@ -162,33 +97,30 @@ setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
     set.seed(seed)
 
     # set up permutations
-    gs0_pos <- vapply(seq(perm), function(i){
+    gs0_pos <- lapply(seq(perm), function(i){
         sample(names(signature), size = size_pos)
-    }, FUN.VALUE = character(size_pos))
+    })
 
-    gs0_neg <- vapply(seq(perm), function(i){
+    gs0_neg <- lapply(seq(perm), function(i){
         sample(names(signature), size = size_neg)
-    }, FUN.VALUE = character(size_neg))
+    })
 
     # message date and what's going on
     if (verbose) {
         message("\nCalculating null distribution of enrichment scores by gene shuffling.\nStarted at ", date())
-        pb <- txtProgressBar(max = length(null_list), style = 3)
+        pb <- txtProgressBar(max = perm, style = 3)
     } else pb <- NULL
-
-    # little safety net
-    if(!any(c(set_pos, set_neg) %in% names(signature))) stop('Gene set names could not be found in signature!', call. = FALSE)
 
     # loop through permutations and calculate enrichment scores
     null_es_pos <- vector(mode = 'numeric', length = perm)
     null_es_neg <- vector(mode = 'numeric', length = perm)
 
-    for(i in seq_along(null_list)){
+    for(i in seq(perm)){
 
         if (!is.null(pb)) setTxtProgressBar(pb, i)
 
-        null_es_pos[i] <- gsea1T(signature = signature, gS = gs0_pos, weight = w, onlyES = TRUE)
-        null_es_neg[i] <- gsea1T(signature = signature, gS = gs0_neg, weight = w, onlyES = TRUE)
+        null_es_pos[i] <- gsea1T(signature = signature, gS = gs0_pos[[i]], weight = w, onlyES = TRUE)
+        null_es_neg[i] <- gsea1T(signature = signature, gS = gs0_neg[[i]], weight = w, onlyES = TRUE)
     }
 
     gsea_obj$null_es_pos <- null_es_pos
@@ -212,12 +144,12 @@ setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
     } else {
         # permutation again depends on signs of enrichment scores
         if(gsea_obj$ES_pos >= 0) {
-            pval_pos <- (sum(null_es_pos > gsea_obj$ES_pos)+1)/(length(null_es_pos)+1)
-        } else pval_pos <- (sum(null_es_pos < gsea_obj$ES_pos)+1)/(length(null_es_pos)+1)
+            gsea_obj$pval_pos <- (sum(null_es_pos > gsea_obj$ES_pos)+1)/(length(null_es_pos)+1)
+        } else gsea_obj$pval_pos <- (sum(null_es_pos < gsea_obj$ES_pos)+1)/(length(null_es_pos)+1)
 
         if(gsea_obj$ES_neg >= 0) {
-            pval_neg <- (sum(null_es_neg > gsea_obj$ES_neg)+1)/(length(null_es_neg)+1)
-        } else pval_neg <- (sum(null_es_neg < gsea_obj$ES_neg)+1)/(length(null_es_neg)+1)
+            gsea_obj$pval_neg <- (sum(null_es_neg > gsea_obj$ES_neg)+1)/(length(null_es_neg)+1)
+        } else gsea_obj$pval_neg <- (sum(null_es_neg < gsea_obj$ES_neg)+1)/(length(null_es_neg)+1)
     }
     return(gsea_obj)
 })

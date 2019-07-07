@@ -197,3 +197,61 @@ res_msvip <- function(mrst, padjust = c('fdr', 'bonferroni','none')) {
 
 }
 
+#' Generate a randomized network
+#'
+#' The procedure applies the Maslov-Sneppen procedure, i.e. substitutes regulatory protein targets
+#' with the same number of randomly assigned targets, thus producing a random program topology
+#' while preserving the number of target genes of each RP.
+#'
+#' @param regulon regulon object - see output of viper::aracne2regulon
+#' @param universe set to NULL, can be supplied to provide the gene universe to chose targets from
+#' @param seed before random sampling
+#' @return regulon with randomized targets and preserved topology
+#' @export
+
+randomize_regulon <- function(regulon, universe = NULL, seed = 42) {
+
+    set.seed(seed)
+
+    if(is.null(universe)){
+        unv <- union(unlist(lapply(regulon, function(i) names(i$tfmode)), use.names = FALSE), names(regulon))
+    } else unv <- universe
+
+    if (!any(names(regulon) %in% unv)) stop("regulon names cannot be found in gene universe, please reconsider!")
+
+    tmp <- lapply(regulon, function(i){
+        sz <- length(i$tfmode)
+        names(i$tfmode) <- sample(x = unv, size = sz)
+        return(i)
+        })
+    class(tmp) <- 'regulon'
+    return(tmp)
+}
+
+#' Extract msviper results
+#'
+#' @param mrst msviper object
+#' @param padjust method for adjusting p-values for multiple hypothesis testing
+#' @return a tibble with genes, NES, p-values and FDR
+#' @export
+
+res_msvip <- function(mrst, padjust = c('fdr', 'bonferroni','none')) {
+
+    method <- match.arg(padjust, choices = c('fdr', 'bonferroni','none'))
+
+    if(is.null(mrst$es$nes.se)){
+        res <- tibble::tibble(gene = names(mrst$es$nes),
+                              nes = mrst$es$nes,
+                              pval = mrst$es$p.value,
+                              padj = p.adjust(mrst$es$p.value, method = method))
+    } else{
+        res <- tibble::tibble(gene = names(mrst$es$nes),
+                              nes = mrst$es$nes,
+                              nes_se = mrst$es$nes.se,
+                              pval = mrst$es$p.value,
+                              padj = p.adjust(mrst$es$p.value, method = method))
+    }
+
+    res <- dplyr::arrange(res, desc(nes))
+    return(res)
+}

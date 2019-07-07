@@ -5,15 +5,25 @@
 \title{Extract msviper results}
 \usage{
 res_msvip(mrst, padjust = c("fdr", "bonferroni", "none"))
+
+res_msvip(mrst, padjust = c("fdr", "bonferroni", "none"))
 }
 \arguments{
+\item{mrst}{msviper object}
+
+\item{padjust}{method for adjusting p-values for multiple hypothesis testing}
+
 \item{mrst}{msviper object}
 
 \item{padjust}{method for adjusting p-values for multiple hypothesis testing}
 }
 \value{
 a tibble with genes, NES, p-values and FDR
+
+a tibble with genes, NES, p-values and FDR
 }
 \description{
+Extract msviper results
+
 Extract msviper results
 }
