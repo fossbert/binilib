@@ -292,14 +292,14 @@ order_heatmap <- function(expmat, factorCol, factorRow = NULL, rev = FALSE) {
     # now it'll depend on the number of levels for a factors
     # for the ones in the middle (if there is one), order will be randomized
     if(length(lvls) == 2) {
-        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]))]
+        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
         submats[[2]] <- submats[[2]][,order(colMeans(submats[[2]]))]
     } else if (length(lvls) == 3){
-        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]))]
+        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
         submats[[2]] <- submats[[2]][,sample(seq(ncol(submats[[2]])))]
         submats[[3]] <- submats[[3]][,order(colMeans(submats[[3]]))]
     } else {
-        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]))]
+        submats[[1]] <- submats[[1]][,order(colMeans(submats[[1]]), decreasing = TRUE)]
         submats[2:(length(lvls)-1)] <- lapply(submats[2:(length(lvls)-1)], function(i) i[,sample(seq(ncol(i)))])
         submats[[length(lvls)]] <- submats[[length(lvls)]][,order(colMeans(submats[[length(lvls)]]))]
     }
