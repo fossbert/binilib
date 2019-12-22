@@ -5,7 +5,7 @@
 \title{Split violin plot}
 \usage{
 split_violin(x, s1, s2, cols = c("cornflowerblue", "salmon"), ylb = "",
-  rug = FALSE, legpos = "topleft", ...)
+  rug = FALSE, legpos = "topleft", rotate_xlabels = NULL, ...)
 }
 \arguments{
 \item{x}{a numeric variable to be split in two ways}
@@ -19,6 +19,10 @@ split_violin(x, s1, s2, cols = c("cornflowerblue", "salmon"), ylb = "",
 \item{ylb}{default for y-axis, could be changed if you know the nature of x (e.g. Z-score)}
 
 \item{rug}{logical, whether to plot the data points as a rug}
+
+\item{legpos}{character, indicating the position of the legend}
+
+\item{rotate_xlabels}{integer, if not NULL, will be used as degree rotation of x labels}
 }
 \value{
 a plot will be send to the graphics output

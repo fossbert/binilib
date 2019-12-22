@@ -104,6 +104,8 @@ legend_col <- function(col, level, side = 4){
 #' @param cols vector of lenght 2 indicating colors in R (hex, integer or plane name)
 #' @param ylb default for y-axis, could be changed if you know the nature of x (e.g. Z-score)
 #' @param rug logical, whether to plot the data points as a rug
+#' @param legpos character, indicating the position of the legend
+#' @param rotate_xlabels integer, if not NULL, will be used as degree rotation of x labels
 #' @return a plot will be send to the graphics output
 #' @export
 
@@ -112,6 +114,7 @@ split_violin <- function(x, s1, s2,
                          ylb = '',
                          rug = FALSE,
                          legpos = 'topleft',
+                         rotate_xlabels = NULL,
                          ...) {
 
     omar <- par()$mar
@@ -164,8 +167,16 @@ split_violin <- function(x, s1, s2,
         yr <- c(min(at)-0.5, max(at)+0.5)
     }
 
+    # define plotting environment, space below x depends on length of x labels
+    maxlength <- max(vapply(levels(s1), nchar, numeric(1)), na.rm = TRUE)
+    if (maxlength <= 10){
+        par(mar = c(4.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
+        cex_x <- 1
+    } else {
+        par(mar = c(6.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
+        cex_x <- .65
+    }
 
-    par(mar = c(3.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
     plot(0, xaxt='n',
          ylab = ylb,
          xlab = '',
@@ -209,7 +220,20 @@ split_violin <- function(x, s1, s2,
         }
 
     }
-    axis(side = 1, at = at, labels = names(l2))
+
+    if (!is.null(rotate_xlabels)){
+        axis(side=1, at=at, tick = FALSE, labels = FALSE)
+        text(x = at, y = par("usr")[3],
+             labels = names(l2),
+             srt = rotate_xlabels,
+             cex = cex_x,
+             adj = c(1,1),
+             xpd = TRUE)
+    } else axis(side = 1,
+                at = at,
+                labels = names(l2),
+                cex = cex_x)
+
     legend(legpos, legend = levels(s2), pch = 15, col = cols)
 
     par(mar = omar, mgp = omgp, las = 0) # restore old settings
