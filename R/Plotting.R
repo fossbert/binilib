@@ -173,8 +173,8 @@ split_violin <- function(x, s1, s2,
         par(mar = c(4.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
         cex_x <- 1
     } else {
-        par(mar = c(6.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
-        cex_x <- .65
+        par(mar = c(5.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
+        cex_x <- .8
     }
 
     plot(0, xaxt='n',

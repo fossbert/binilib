@@ -225,9 +225,13 @@ stouffer_z <- function(x, weights = NULL) {
 #' @param expmat matrix whose rows can partly be summarized using a factor
 #' @param fac factor used for summarizing rows
 #' @param method method of summary, defaults to IQR
+#' @param ... arguments passed to summary functions (typically na.rm)
 #' @return new matrix where rownames correspond to factor level names (e.g. gene symbols)
 #' @export
-pick_probes <- function(expmat, fac, method = c('IQR', 'mad', 'mean', 'median')) {
+pick_probes <- function(expmat,
+                        fac,
+                        method = c('IQR', 'mad', 'mean', 'median'),
+                        ...) {
 
     method <- match.arg(method)
 
@@ -238,10 +242,10 @@ pick_probes <- function(expmat, fac, method = c('IQR', 'mad', 'mean', 'median'))
     if(nrow(mat) != length(fac)) stop('factor length must match row number!')
 
     switch(method,
-           IQR={smr <- apply(mat, 1, IQR, na.rm = FALSE)},
-           mad={smr <- apply(mat, 1, mad, na.rm = FALSE)},
-           mean={smr <- rowMeans(mat, na.rm = FALSE)},
-           median={smr <- apply(mat, 1, median, na.rm = FALSE)})
+           IQR={smr <- apply(mat, 1, IQR, ...)},
+           mad={smr <- apply(mat, 1, mad, ...)},
+           mean={smr <- rowMeans(mat, ...)},
+           median={smr <- apply(mat, 1, median, ...)})
     # find max of summary measure
     keep <- vapply(split(smr, fac), function(i) names(i)[which.max(i)], FUN.VALUE = character(1))
     # return subset matrix

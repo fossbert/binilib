@@ -4,7 +4,7 @@
 \alias{pick_probes}
 \title{Find best probe if there are multiple per gene}
 \usage{
-pick_probes(expmat, fac, method = c("IQR", "mad", "mean", "median"))
+pick_probes(expmat, fac, method = c("IQR", "mad", "mean", "median"), ...)
 }
 \arguments{
 \item{expmat}{matrix whose rows can partly be summarized using a factor}
@@ -12,6 +12,8 @@ pick_probes(expmat, fac, method = c("IQR", "mad", "mean", "median"))
 \item{fac}{factor used for summarizing rows}
 
 \item{method}{method of summary, defaults to IQR}
+
+\item{...}{arguments passed to summary functions (typically na.rm)}
 }
 \value{
 new matrix where rownames correspond to factor level names (e.g. gene symbols)
