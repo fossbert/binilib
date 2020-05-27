@@ -404,3 +404,49 @@ l2df <- function(list) {
            receptor = unlist(map(list, ~ names(.)), use.names = FALSE),
            rho = unlist(list, use.names = FALSE))
 }
+
+#' For a signature matrix containing conditions/comparisons in its columns and typically gene names
+#' in its rows, this function will find the top N genes for a given condition. It will do so by
+#' computing for each gene the difference between the individual value for in a given condition and the
+#' maximum value among the other conditions.
+#'
+#' @param mat numeric matrix
+#' @param nn integer indicating how many genes to isolate for each condition/comparison (default = 50)
+#' @param verbose logical indicating whether to message information on the process
+#' @return a data frame with gene names for from the rownames of the input matrix
+#' @export
+
+specific_n <- function(mat, nn = 50, verbose = TRUE){
+
+    stopifnot(is.numeric(mat))
+
+    # compute a new matrix of differences between
+    # the comparisons
+    tmp <- vapply(seq(ncol(mat)), function(i){
+
+        vapply(seq(nrow(mat)), function(j){
+            mat[j, i] - max(mat[j, -i])
+        }, FUN.VALUE = numeric(1))
+
+    }, FUN.VALUE = numeric(nrow(mat)))
+
+    # names are lost
+    colnames(tmp) <- colnames(mat)
+    rownames(tmp) <- rownames(mat)
+
+
+    tmp <- apply(tmp, 2, function(i){
+        idx <- order(i, decreasing = TRUE)[1:nn]
+        rownames(tmp)[idx]
+    })
+
+    if (verbose){
+        message('Found ', nrow(tmp), ' specific genes for each of ', ncol(tmp), ' comparisons/signatures!')
+    }
+
+    return(data.frame(tmp, stringsAsFactors = FALSE))
+
+
+}
+
+
