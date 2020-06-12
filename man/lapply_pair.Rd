@@ -4,10 +4,12 @@
 \alias{lapply_pair}
 \title{lapply function to apply functions in a pair-wise manner between all distinct elements of a list}
 \usage{
-lapply_pair(x, f, ...)
+lapply_pair(x, skip_self = TRUE, f, ...)
 }
 \arguments{
 \item{x}{list}
+
+\item{skip_self}{logical indicating on whether function should be applied to the same element of the list, may be set to FALSE for symmetry reasons}
 
 \item{f}{the function to be applied between each pair of elements of the list. Function needs to take two arguments: i and j.}
 }

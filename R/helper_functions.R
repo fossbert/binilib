@@ -124,10 +124,11 @@ write_matrix <- function(eset, path) {
 #'
 #' @param x list
 #' @param f the function to be applied between each pair of elements of the list. Function needs to take two arguments: i and j.
+#' @param skip_self logical indicating on whether function should be applied to the same element of the list, may be set to FALSE for symmetry reasons
 #' @return list object with the results
 #' @export
 
-lapply_pair <- function(x, f, ...) {
+lapply_pair <- function(x, skip_self = TRUE, f, ...) {
 
     if (is.null(names(x))) nom <- paste('Element', 1:length(x), sep = '_') else nom <- names(x)
     out <- vector("list", length(x))
@@ -136,7 +137,9 @@ lapply_pair <- function(x, f, ...) {
     for (i in seq_along(x)) {
 
         for(j in seq_along(x)) {
-            if (i == j) next
+            if(skip_self){
+                if (i == j) next
+            }
             id <- nom[j]
             out[[i]][[id]] <- f(x[[i]], x[[j]], ...)
         }
