@@ -3,6 +3,10 @@
 #' @import tidyverse
 #' @import methods
 #' @importFrom RColorBrewer brewer.pal
+#' @importFrom DESeq newCountDataSet
+#' @importFrom DESeq estimateSizeFactors
+#' @importFrom DESeq estimateDispersions
+#' @importFrom DESeq getVarianceStabilizedData
 NULL
 
 #' @importFrom magrittr %<>%

@@ -121,3 +121,55 @@ basic_signature <- function(eset, tpm = FALSE, ...){
 
     return(((rank - rmed)/rmad[keep]))
 }
+
+
+
+
+#' Variance stabilization transformation for RNAseq data
+#'
+#' This function stabilizes the variance, transform the data and add shot noise to the data
+#'
+#' @param x CountDataSet or matrix containing the raw counts, with genes in rows and samples in columns
+#' @param method Character string indicating the method for estimatinf the dispersion (see DESeq::estimateDispersions)
+#' @param fitType Character string indicating the type of fit for the dispersion (see DESeq::estimateDispersions)
+#' @param seed Integer indicating the fixed seed for random numbers, 0 for not setting the seed
+#' @return Expression matrix
+#' @export
+
+DEtransform <- function(x,
+                        method=c("blind", "pooled", "pooled-CR", "per-condition"),
+                        fitType=c("parametric", "local"),
+                        noise=TRUE,
+                        seed=1) {
+    if (seed>0) set.seed(seed)
+    method <- match.arg(method)
+    fitType <- match.arg(fitType)
+    cnames <- NULL
+    if (class(x) != "CountDataSet") {
+        if (class(x) != "matrix") stop("x must be a CountDataSet or integer matrix object", call.=F)
+        if (length(which(duplicated(colnames(x))))>0) {
+            cnames <- colnames(x)
+            colnames(x) <- 1:ncol(x)
+        }
+        x <- newCountDataSet(x, factor(colnames(x)))
+    }
+    x <- estimateSizeFactors(x)
+    x <- estimateDispersions(x, method=method, fitType=fitType)
+    x <- getVarianceStabilizedData(x)
+    tmp <- x
+    if (noise) {
+        tmp <- unlist(apply(x, 2, function(x) {
+            x <- sort(unique(x))
+            x <- cbind(x[1:(length(x)-1)], x[2:length(x)])
+            x <- cbind(x[, 1], sqrt(rowVar(x)))
+            return(list(x))
+        }), recursive=FALSE)
+        tmp <- cbind(unlist(lapply(tmp, function(x) x[, 1]), use.names=F), unlist(lapply(tmp, function(x) x[, 2]), use.names=F))
+        tmp1 <- smooth.spline(tmp[, 1], tmp[, 2], spar=.5)
+        tmp[tmp[, 1]>tmp1$x[which.min(tmp1$y)], 2] <- 0
+        tmp1 <- smooth.spline(tmp[, 1], tmp[, 2], spar=.5)
+        tmp <- x+rnorm(length(x))*predict(tmp1, x)$y
+    }
+    if (!is.null(cnames)) colnames(tmp) <- cnames
+    return(tmp)
+}
