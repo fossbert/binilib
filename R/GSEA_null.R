@@ -84,9 +84,8 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
 #' @aliases gsea_null, gsea2-method
 setMethod("gsea_null", c(gsea_obj="gsea2"), function(gsea_obj,
                                          w = 1,
-                                         perm = 1000,
                                          seed = 42,
-                                         analytical = FALSE,
+                                         perm = 1000,
                                          verbose = TRUE) {
 
     signature <- gsea_obj$signature

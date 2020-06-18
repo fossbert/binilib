@@ -125,6 +125,9 @@ gsea_regulon <- function(signature,
     pos_gsea <- gsea1T(signature, pos_targ, sorting = sort_type, weight = weight)
     neg_gsea <- gsea1T(signature, neg_targ, sorting = sort_type, weight = weight)
 
+     #calc stats with aREA right away
+    stats <- aREA_single(ges = signature, regulon = regulon)
+
     gsea.obj <- list(
         signature = pos_gsea$signature, # original signature
         ES_pos = pos_gsea$ES, ES_neg = neg_gsea$ES, # enrichment scores
@@ -133,11 +136,10 @@ gsea_regulon <- function(signature,
         gs_idx_pos = pos_gsea$gs_idx, gs_idx_neg = neg_gsea$gs_idx, # indices for gene sets in signature
         ledge_pos = pos_gsea$ledge, ledge_neg = neg_gsea$ledge, # leading edges
         ledge_idx_pos = pos_gsea$ledge_index, ledge_idx_neg = neg_gsea$ledge_index, # leading edge positions in signature
-        null_es_pos = NULL, null_es_neg = NULL, NES_pos = NULL, NES_neg = NULL,
-        pval_pos = NULL, pval_neg = NULL
+        nes = stats$nes, pval = stats$pval
 )
 
-    class(gsea.obj) <- "gsea2"
+    class(gsea.obj) <- "gsea2regulon"
     return(gsea.obj)
 }
 
