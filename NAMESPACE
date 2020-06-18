@@ -2,8 +2,10 @@
 
 S3method(plot,gsea1)
 S3method(plot,gsea2)
+S3method(plot,gsea2regulon)
 export("%<>%")
 export(DEtransform)
+export(aREA_single)
 export(any2entrez)
 export(any2symbol)
 export(basic_rank_norm)

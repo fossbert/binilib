@@ -10,7 +10,7 @@
   ledge = TRUE, fixY = NULL, ...)
 }
 \arguments{
-\item{gsea2}{gsea2 object as returned from \code{gsea_regulon} or \code{gsea2T}}
+\item{gsea2}{gsea2 object as returned from \code{gsea2T}}
 
 \item{color}{Vector of two components indicating the colors for the negative and positive parts of the regulon}
 
