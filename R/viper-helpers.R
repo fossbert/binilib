@@ -39,7 +39,7 @@ vpres2regulon <- function(vpres,
         if(!is.null(pb)) setTxtProgressBar(pb, i)
 
         smp <- vpres[,i]
-        names(tfm) <- rownames(vpres[order(smp, decreasing = TRUE), ])[idx]
+        names(tfm) <- rownames(vpres[order(smp, decreasing = TRUE), ,drop = FALSE])[idx]
 
         list(tfmode = tfm, likelihood = unname(abs(tfm)))
 
