@@ -17,7 +17,7 @@ vpres2regulon <- function(vpres,
                           verbose = TRUE) {
 
     # in case of a msviper result, i.e. a named numeric vector, make matrix
-    if(is.null(ncol(vpres))) matrix(vpres, length(vpres), 1, dimnames = list(names(vpres), 'msviper_result'))
+    if(is.null(ncol(vpres))) vpres <- matrix(vpres, length(vpres), 1, dimnames = list(names(vpres), 'msviper_result'))
 
     dir <- match.arg(direction)
 
