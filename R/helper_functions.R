@@ -228,12 +228,15 @@ stouffer_z <- function(x, weights = NULL) {
 #' @param expmat matrix whose rows can partly be summarized using a factor
 #' @param fac factor used for summarizing rows
 #' @param method method of summary, defaults to IQR
+#' @param returnProbes logical (default = FALSE), whether to return the actual probe IDs
+#' rather than a subset matrix, useful for some cases
 #' @param ... arguments passed to summary functions (typically na.rm)
 #' @return new matrix where rownames correspond to factor level names (e.g. gene symbols)
 #' @export
 pick_probes <- function(expmat,
                         fac,
                         method = c('IQR', 'mad', 'mean', 'median'),
+                        returnProbes = FALSE,
                         ...) {
 
     method <- match.arg(method)
@@ -251,10 +254,14 @@ pick_probes <- function(expmat,
            median={smr <- apply(mat, 1, median, ...)})
     # find max of summary measure
     keep <- vapply(split(smr, fac), function(i) names(i)[which.max(i)], FUN.VALUE = character(1))
-    # return subset matrix
-    tmp <- mat[keep, ]
-    rownames(tmp) <- levels(fac)
-    tmp
+    # return subset matrix or probes
+    if(returnProbes){
+        keep
+    } else{
+        tmp <- mat[keep, ]
+        rownames(tmp) <- levels(fac)
+        tmp
+    }
 }
 
 
