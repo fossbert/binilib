@@ -43,6 +43,12 @@ gsea1T <- function(signature,
                 tmp <- rep(-(1/Nh), length(signature))
                 tmp[idx] <- abs(signature[idx])^weight/Nr
                 rs <- cumsum(tmp) # running sum
+
+                # plotting cosmetics:
+                # adjust first and last position if first or last position is a hit
+                if(rs[1] != -(1/Nh)) rs[1] <- -(1/Nh)
+                if(rs[length(rs)] != -(1/Nh)) rs[length(rs)] <- -(1/Nh)
+
                 maxabs <- which.max(abs(rs))
                 es <- rs[maxabs]
 
