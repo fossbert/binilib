@@ -103,13 +103,10 @@ plot_OneReg_MultSig <- function(sigmat,
 }
 
 
-
-
-
 #' Plot one-tailed GSEA on one signature for multiple gene sets
 #'
 #' This function generates a plot of the member genes of a given gene set on a given signature
-#' for multiple
+#' for multiple gene sets.
 #'
 #' @param ges gene expression signature, a named vector of Z-scores, t-statistics, or log2 fold changes
 #' @param geneSets a named list of character vectors representing the gene sets
@@ -117,6 +114,7 @@ plot_OneReg_MultSig <- function(sigmat,
 #' @param ledge_only Logical, whether to include all genes of gene set or only those in leading edge
 #' @param signatureNames Character vector of length 2, specifying the experimental conditions
 #' @param color Vector of two components indicating the colors for each part of the signature
+#' @param ... adjustment of cex for pathway names
 #' @return Nothing, a plot is generated in the default output device
 #' @export
 
@@ -125,8 +123,8 @@ plot_fgseaRes <- function(ges,
                           fgseaRes,
                           ledge_only = FALSE,
                           signatureNames = NULL,
-                          color=c("firebrick2", "royalblue"),
-                                ...) {
+                           color=c("firebrick2", "royalblue"),
+                           cex_pw = 1) {
 
     omar <- par()$mar
     omgp <- par()$mgp
@@ -273,7 +271,8 @@ plot_fgseaRes <- function(ges,
         #    xright = length(x), ytop = max(c(blim_down, blim_up)))
 
     }
-    text(rep(length(x)*1.02, y), seq(y)-.5, names(tmp), adj = 0)
+    text(rep(length(x)*1.02, y), seq(y)-.5, names(tmp), adj = 0, cex = cex_pw)
+
     if(!is.null(signatureNames)){
         if(length(signatureNames) != 2) stop('Need 2 (!) signature names!')
         mtext(signatureNames[1], at = 0, line = 1, adj = 0)
