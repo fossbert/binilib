@@ -14,7 +14,7 @@
 plot_OneReg_MultSig <- function(sigmat,
                           tf,
                           regulon,
-                          color=c("cornflowerblue", "salmon"),
+                          color=c("salmon", "cornflowerblue"),
                           nes = NULL,
                           padj = NULL,
                           ...) {
@@ -73,7 +73,17 @@ plot_OneReg_MultSig <- function(sigmat,
          xlab="",
          yaxs="i")
     # bar plots
+
+    # set up barcolors
+    cols <- col2rgb(color)
+
     for (i in seq_along(tmp)) {
+
+        # tune alphas to blunt the middle
+        middle <- floor(length(x)/2)
+        alphas <- numeric(length(x))
+        alphas[seq(middle)] <- seq(255, 100, length.out = middle)
+        alphas[(middle+1):length(alphas)] <- seq(100, 255, length.out = length(alphas)-middle)
 
         gs2 <- tmp[[i]]
         blim_up <- c(i-.5, i)
@@ -82,11 +92,26 @@ plot_OneReg_MultSig <- function(sigmat,
         xpos <- gs2$gs_idx_pos
         xneg <- gs2$gs_idx_neg
 
+        tmpcol <- cols[,1]
         for(j in seq_along(xpos)){
-            lines(x = rep(x[xpos[j]], 2), y = blim_up, col = color[2], lwd = .8)
+            idxpos <- xpos[j]
+            barcol <- rgb(red = tmpcol[1],
+                          green = tmpcol[2],
+                          blue = tmpcol[3],
+                          maxColorValue = 255,
+                          alpha = alphas[idxpos])
+            lines(x = rep(x[idxpos], 2), y = blim_up, col = barcol, lwd = .8)
         }
+
+        tmpcol <- cols[,2]
         for(k in seq_along(xneg)){
-            lines(x = rep(x[xneg[k]], 2), y = blim_down, col = color[1], lwd = .8)
+            idxneg <- xneg[k]
+            barcol <- rgb(red = tmpcol[1],
+                          green = tmpcol[2],
+                          blue = tmpcol[3],
+                          maxColorValue = 255,
+                          alpha = alphas[idxneg])
+            lines(x = rep(x[idxneg], 2), y = blim_down, col = barcol, lwd = .8)
         }
         abline(v = length(x))
         grid(0, y, col = 'black')
@@ -124,7 +149,7 @@ plot_fgseaRes <- function(ges,
                           ledge_only = FALSE,
                           signatureNames = NULL,
                            color=c("firebrick2", "royalblue"),
-                           cex_pw = 1) {
+                          strip_PWnames = TRUE) {
 
     omar <- par()$mar
     omgp <- par()$mgp
@@ -198,8 +223,8 @@ plot_fgseaRes <- function(ges,
     padj <- padj[ordx]
     tmp <- tmp[ordx]
 
-    mx <- max(nes, na.rm = TRUE)
-    if(mx > 5) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-5, 5, length.out = 101)
+    mx <- max(abs(nes), na.rm = TRUE)
+    if(mx > 3) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-3, 3, length.out = 101)
     par(mar = c(2.1, 2.1, 4.1, .05))
     hcols <- c('royalblue', 'white', 'firebrick2')
     image(1, seq(y), t(nes), ylab="", xlab="",
@@ -220,7 +245,7 @@ plot_fgseaRes <- function(ges,
     mtext('FDR', at = .5, line = 1)
 
     # Plot 3: targets in signature
-    xlimit <- c(0, length(x)*(1+.15*max(nchar(names(tmp)))/8))
+    xlimit <- c(0, length(x)*(1+.2*max(nchar(names(tmp)))/8))
 
     par(mar = c(2.1, 0.1, 4.1, 1.1))
     plot(0, type="n",
@@ -271,7 +296,12 @@ plot_fgseaRes <- function(ges,
         #    xright = length(x), ytop = max(c(blim_down, blim_up)))
 
     }
-    text(rep(length(x)*1.02, y), seq(y)-.5, names(tmp), adj = 0, cex = cex_pw)
+    if(strip_PWnames){
+        pws <- gsub(pattern = '^[A-Z]+_', replacement = '', names(tmp))
+    } else {
+        pws <- names(tmp)
+    }
+    text(rep(length(x)*1.02, y), seq(y)-.5, pws, adj = 0)
 
     if(!is.null(signatureNames)){
         if(length(signatureNames) != 2) stop('Need 2 (!) signature names!')
