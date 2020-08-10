@@ -37,7 +37,7 @@ plot_OneReg_MultSig <- function(sigmat,
     ordx <- order(nes)
     nes <- nes[ordx]
 
-    mx <- max(nes, na.rm = TRUE)
+    mx <- max(abs(nes, na.rm = TRUE))
     if(mx > 5) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-5, 5, length.out = 101)
     par(mar = c(2.1, 2.1, 4.1, .05))
     hcols <- c('royalblue', 'white', 'firebrick2')
@@ -139,6 +139,7 @@ plot_OneReg_MultSig <- function(sigmat,
 #' @param ledge_only Logical, whether to include all genes of gene set or only those in leading edge
 #' @param signatureNames Character vector of length 2, specifying the experimental conditions
 #' @param color Vector of two components indicating the colors for each part of the signature
+#' @param strip_PWnames Logical, whether to remove commonly used Pathway prefixes, e.g. HALLMARK
 #' @param ... adjustment of cex for pathway names
 #' @return Nothing, a plot is generated in the default output device
 #' @export
@@ -149,7 +150,8 @@ plot_fgseaRes <- function(ges,
                           ledge_only = FALSE,
                           signatureNames = NULL,
                            color=c("firebrick2", "royalblue"),
-                          strip_PWnames = TRUE) {
+                          strip_PWnames = TRUE,
+                          ...) {
 
     omar <- par()$mar
     omgp <- par()$mgp
@@ -159,7 +161,7 @@ plot_fgseaRes <- function(ges,
     })
 
     x <- seq(length(ges))
-    y <- length(tmp)
+
 
     layout(cbind(1,2,3), widths = c(1,1,6))
 
@@ -216,6 +218,7 @@ plot_fgseaRes <- function(ges,
     names(padj) <- fgseaRes$pathway
     padj <- padj[common]
     tmp <- tmp[common]
+    y <- length(tmp)
 
     # change order for plot
     ordx <- order(nes)
@@ -230,7 +233,8 @@ plot_fgseaRes <- function(ges,
     image(1, seq(y), t(nes), ylab="", xlab="",
           col = colorRampPalette(hcols)(length(brks)-1),
           breaks = brks,
-          axes = FALSE, yaxs = "i")
+          axes = FALSE,
+          yaxs = "i")
     text(rep(1, y), seq(y), round(nes, 2), col = 'black', font = 2)
     box()
     grid(1, y, col="black", lty=1)
@@ -301,7 +305,7 @@ plot_fgseaRes <- function(ges,
     } else {
         pws <- names(tmp)
     }
-    text(rep(length(x)*1.02, y), seq(y)-.5, pws, adj = 0)
+    text(rep(length(x)*1.02, y), seq(y)-.5, pws, adj = 0, ...)
 
     if(!is.null(signatureNames)){
         if(length(signatureNames) != 2) stop('Need 2 (!) signature names!')

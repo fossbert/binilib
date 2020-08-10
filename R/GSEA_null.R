@@ -58,22 +58,26 @@ setMethod("gsea_null", c(gsea_obj="gsea1"), function(gsea_obj,
 
     # assign null distribution of enrichment scores
     gsea_obj$null_es <- null_es
+
+    # for signatures with 2 tails, i.e. values between -Inf and Inf, use only the correct tail
     # derive NES depending on sign of enrichment score
     if(gsea_obj$ES >= 0) {
-        gsea_obj$mean_nulles <- mean(null_es[null_es >= 0])
+         gsea_obj$mean_nulles <- mean(null_es[null_es >= 0])
     } else {
-        gsea_obj$mean_nulles <- mean(null_es[null_es < 0])
+         gsea_obj$mean_nulles <- mean(null_es[null_es < 0])
     }
+
     gsea_obj$NES <- round(gsea_obj$ES/abs(gsea_obj$mean_nulles), 2)
 
-    # derive p-values: 1.) analytically, two-tailed
+    # derive p-values
     if(analytical){
         gsea_obj$pval <- signif(pnorm(abs(gsea_obj$NES), lower.tail = FALSE)*2, 3)
     } else { # 2.) permutation based, one-tailed
+
         if(gsea_obj$ES >= 0) {
-            gsea_obj$pval <- (sum(null_es > gsea_obj$ES)+1)/(perm+1)
+                gsea_obj$pval <- (sum(null_es > gsea_obj$ES)+1)/(perm+1)
         } else {
-            gsea_obj$pval <- (sum(null_es < gsea_obj$ES)+1)/(perm+1)
+                gsea_obj$pval <- (sum(null_es < gsea_obj$ES)+1)/(perm+1)
         }
     }
     return(gsea_obj)
