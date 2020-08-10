@@ -37,7 +37,7 @@ plot_OneReg_MultSig <- function(sigmat,
     ordx <- order(nes)
     nes <- nes[ordx]
 
-    mx <- max(abs(nes),, na.rm = TRUE)
+    mx <- max(abs(nes), na.rm = TRUE)
     if(mx > 5) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-5, 5, length.out = 101)
     par(mar = c(2.1, 2.1, 4.1, .05))
     hcols <- c('royalblue', 'white', 'firebrick2')
