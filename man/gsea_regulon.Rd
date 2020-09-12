@@ -4,8 +4,12 @@
 \alias{gsea_regulon}
 \title{This function performs GSEA for the negative and positive targets, respectively, of a regulatory gene.}
 \usage{
-gsea_regulon(signature, regulon, sorting = c("decreasing", "increasing"),
-  weight = 1)
+gsea_regulon(
+  signature,
+  regulon,
+  sorting = c("decreasing", "increasing"),
+  weight = 1
+)
 }
 \arguments{
 \item{signature}{Named vector of gene-level statistics (preferably t-statistics)}

@@ -11,11 +11,16 @@
 \usage{
 gsea_null(gsea_obj, ...)
 
-\S4method{gsea_null}{gsea1}(gsea_obj, w = 1, perm = 1000, seed = 42,
-  analytical = FALSE, verbose = TRUE)
+\S4method{gsea_null}{gsea1}(
+  gsea_obj,
+  w = 1,
+  perm = 1000,
+  seed = 42,
+  analytical = FALSE,
+  verbose = TRUE
+)
 
-\S4method{gsea_null}{gsea2}(gsea_obj, w = 1, seed = 42, perm = 1000,
-  verbose = TRUE)
+\S4method{gsea_null}{gsea2}(gsea_obj, w = 1, seed = 42, perm = 1000, verbose = TRUE)
 }
 \arguments{
 \item{gsea_obj}{a gsea object as returned by gsea1T or gsea2T/gsea_regulon}

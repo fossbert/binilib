@@ -4,10 +4,19 @@
 \alias{plot.gsea2}
 \title{Plot 2-tailed enrichment results}
 \usage{
-\method{plot}{gsea2}(gsea2, color = c("cornflowerblue", "salmon"),
-  legend = TRUE, legNames = c("Targets", "pos", "neg"), main = "",
-  plotSignature = FALSE, signatureNames = NULL, signatureType = NULL,
-  ledge = TRUE, fixY = NULL, ...)
+\method{plot}{gsea2}(
+  gsea2,
+  color = c("cornflowerblue", "salmon"),
+  legend = TRUE,
+  legNames = c("Targets", "pos", "neg"),
+  main = "",
+  plotSignature = FALSE,
+  signatureNames = NULL,
+  signatureType = NULL,
+  ledge = TRUE,
+  fixY = NULL,
+  ...
+)
 }
 \arguments{
 \item{gsea2}{gsea2 object as returned from \code{gsea2T}}

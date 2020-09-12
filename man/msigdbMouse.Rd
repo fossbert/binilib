@@ -7,7 +7,8 @@
 Downloaded from the Broad Institute Octobre 2018 and
 converted using information on gene homolgy from the
 Jax Bioinformatics portal}
-\format{List 12 elements containing mouse gene symbols
+\format{
+List 12 elements containing mouse gene symbols
 \describe{
 \item{c1.all}{hallmark gene sets, n = 326}
 \item{c2.cgp}{canonical pathways, n = 3433}
@@ -21,7 +22,8 @@ Jax Bioinformatics portal}
 \item{c5.mf}{GO molecular function, n = 901}
 \item{c6.all}{oncogenic signatures, n = 189}
 \item{h.all}{hallmark gene sets, n = 50}
-}}
+}
+}
 \description{
 Murine version of the Selection of MSigDb gene sets v6.2
 Downloaded from the Broad Institute Octobre 2018 and

@@ -4,8 +4,7 @@
 \alias{vpsig_limma}
 \title{viperSignature and nullmodel using limma}
 \usage{
-vpsig_limma(eset, ref, per = 1000, keep_all = FALSE, seed = 42,
-  verbose = TRUE)
+vpsig_limma(eset, ref, per = 1000, keep_all = FALSE, seed = 42, verbose = TRUE)
 }
 \arguments{
 \item{eset}{normalized gene expression matrix with samples of interest}

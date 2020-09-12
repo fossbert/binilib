@@ -4,8 +4,13 @@
 \alias{gsea2T}
 \title{This function performs GSEA of two gene sets for a given signature}
 \usage{
-gsea2T(signature, set1, set2, sorting = c("decreasing", "increasing"),
-  weight = 1)
+gsea2T(
+  signature,
+  set1,
+  set2,
+  sorting = c("decreasing", "increasing"),
+  weight = 1
+)
 }
 \arguments{
 \item{signature}{Named vector of gene-level statistics (preferably t-statistics)}

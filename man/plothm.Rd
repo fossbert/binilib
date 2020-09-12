@@ -4,8 +4,17 @@
 \alias{plothm}
 \title{Plot heatmap}
 \usage{
-plothm(x, color = c("royalblue", "firebrick2"), gama = 1, cex = 1,
-  grid = T, scale = F, scmax = 0, box = TRUE, ...)
+plothm(
+  x,
+  color = c("royalblue", "firebrick2"),
+  gama = 1,
+  cex = 1,
+  grid = T,
+  scale = F,
+  scmax = 0,
+  box = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{Numerical matrix}

@@ -4,8 +4,13 @@
 \alias{gsea1T}
 \title{This function performs one-tailed Gene Set Enrichment Analysis as described by Subramanian et al.}
 \usage{
-gsea1T(signature, gS, weight = 1, sorting = c("decreasing",
-  "increasing"), onlyES = FALSE)
+gsea1T(
+  signature,
+  gS,
+  weight = 1,
+  sorting = c("decreasing", "increasing"),
+  onlyES = FALSE
+)
 }
 \arguments{
 \item{signature}{Named vector of gene-level statistics (preferably t-statistics)}

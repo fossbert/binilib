@@ -8,7 +8,7 @@ Description: Convenience functions for getting stuff done in R.
 Encoding: UTF-8
 LazyData: true
 License: CC0
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Depends: tidyverse
 Imports: magrittr, methods, RColorBrewer, limma, stringr
 Collate: 
@@ -17,9 +17,11 @@ Collate:
     'GSEA_Subramanian.R'
     'classes.R'
     'GSEA_null.R'
+    'Integration.R'
     'MatrixOp.R'
     'Normalization.R'
     'Plotting.R'
+    'clustering_mja.R'
     'geneConversions.R'
     'helper_functions.R'
     'multiple_signatures_plot.R'

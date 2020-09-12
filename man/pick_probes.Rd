@@ -4,8 +4,13 @@
 \alias{pick_probes}
 \title{Find best probe if there are multiple per gene}
 \usage{
-pick_probes(expmat, fac, method = c("IQR", "mad", "mean", "median"),
-  returnProbes = FALSE, ...)
+pick_probes(
+  expmat,
+  fac,
+  method = c("IQR", "mad", "mean", "median"),
+  returnProbes = FALSE,
+  ...
+)
 }
 \arguments{
 \item{expmat}{matrix whose rows can partly be summarized using a factor}

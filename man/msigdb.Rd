@@ -5,7 +5,8 @@
 \alias{msigdb}
 \title{Modules c1 through c6 and hallmark gene sets from the MSigDb v6.2
 Downloaded from the Broad Institute on October 2018}
-\format{List with 12 elements containing human gene symbols
+\format{
+List with 12 elements containing human gene symbols
 \describe{
 \item{c1.all}{hallmark gene sets, n = 326}
 \item{c2.cgp}{canonical pathways, n = 3433}
@@ -19,7 +20,8 @@ Downloaded from the Broad Institute on October 2018}
 \item{c5.mf}{GO molecular function, n = 901}
 \item{c6.all}{oncogenic signatures, n = 189}
 \item{h.all}{hallmark gene sets, n = 50}
-}}
+}
+}
 \description{
 Modules c1 through c6 and hallmark gene sets from the MSigDb v6.2
 Downloaded from the Broad Institute on October 2018

@@ -416,7 +416,7 @@ l2df <- function(list) {
 }
 
 #' For a signature matrix containing conditions/comparisons in its columns and typically gene names
-#' in its rows, this function will find the top N genes for a given condition. It will do so by
+#' in its rows, this function will find the most specific N genes for a given condition. It will do so by
 #' computing for each gene the difference between the individual value for in a given condition and the
 #' maximum value among the other conditions.
 #'
@@ -456,6 +456,43 @@ specific_n <- function(mat, nn = 50, verbose = TRUE){
 
     return(data.frame(tmp, stringsAsFactors = FALSE))
 
+}
+
+
+
+
+
+
+#' For a numeric matrix containing samples or conditions in its columns and typically genes
+#' in its rows, this function will find the top N genes for a given condition. You can choose to retrieve
+#' both genes with highest and lowest values, respectively or either one of them.
+#'
+#' @param mat numeric matrix
+#' @param direction character, which tail should be returned, defaults to both up and down
+#' @param nn integer indicating how many genes to isolate for each tail (default = 25)
+#' @return a data frame with gene names for from the rownames of the input matrix
+#' @export
+
+topN_mat <- function(mat,
+                  direction = c('both', 'up', 'down'),
+                  nn = 25,
+                  verbose = TRUE){
+
+    stopifnot(is.numeric(mat))
+
+    dir <- match.arg(direction)
+
+    switch(dir,
+           both = {idx <- c(1:nn, (nrow(mat)-(nn-1)):nrow(mat))},
+           up = {idx <- 1:nn},
+           down = {idx <- (nrow(mat)-(nn-1)):nrow(mat)}
+    )
+    # order each sample/condition from high to low
+    tmp <- apply(mat, 2, function(i){
+        rownames(mat[order(i, decreasing = TRUE), ,drop = FALSE])[idx]
+    })
+
+        return(data.frame(tmp, stringsAsFactors = FALSE))
 
 }
 

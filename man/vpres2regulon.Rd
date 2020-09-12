@@ -4,8 +4,14 @@
 \alias{vpres2regulon}
 \title{Extract the top up and down regulated MR per sample}
 \usage{
-vpres2regulon(vpres, nn = 25, direction = c("both", "up", "down"),
-  make_regulon = FALSE, reverse = FALSE, verbose = TRUE)
+vpres2regulon(
+  vpres,
+  nn = 25,
+  direction = c("both", "up", "down"),
+  make_regulon = FALSE,
+  reverse = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{vpres}{numeric matrix of NES as returned by the viper function}

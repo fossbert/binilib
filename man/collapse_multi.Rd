@@ -4,8 +4,12 @@
 \alias{collapse_multi}
 \title{Collapsing many-to-one relationships for gene expression matrices on per sample basis}
 \usage{
-collapse_multi(expmat, fac, method = c("mean", "median", "max", "sum"),
-  verbose = TRUE)
+collapse_multi(
+  expmat,
+  fac,
+  method = c("mean", "median", "max", "sum"),
+  verbose = TRUE
+)
 }
 \arguments{
 \item{expmat}{matrix whose rows can partly be summarized using a factor}

@@ -4,8 +4,14 @@
 \alias{tpm}
 \title{tpm}
 \usage{
-tpm(counts, log = TRUE, offset = 0.25, type = c("Symbol", "Entrez"),
-  species = c("Human", "Mouse"), filterZero = TRUE)
+tpm(
+  counts,
+  log = TRUE,
+  offset = 0.25,
+  type = c("Symbol", "Entrez"),
+  species = c("Human", "Mouse"),
+  filterZero = TRUE
+)
 }
 \arguments{
 \item{counts}{Numeric matrix of \strong{human} raw read counts per gene}

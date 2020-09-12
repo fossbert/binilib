@@ -130,17 +130,13 @@ basic_signature <- function(eset, tpm = FALSE, ...){
 #' This function stabilizes the variance, transform the data and add shot noise to the data
 #'
 #' @param x CountDataSet or matrix containing the raw counts, with genes in rows and samples in columns
-#' @param method Character string indicating the method for estimatinf the dispersion (see DESeq::estimateDispersions)
+#' @param method Character string indicating the method used to calculate the empirical dispersion
 #' @param fitType Character string indicating the type of fit for the dispersion (see DESeq::estimateDispersions)
 #' @param seed Integer indicating the fixed seed for random numbers, 0 for not setting the seed
 #' @return Expression matrix
 #' @export
 
-DEtransform <- function(x,
-                        method=c("blind", "pooled", "pooled-CR", "per-condition"),
-                        fitType=c("parametric", "local"),
-                        noise=TRUE,
-                        seed=1) {
+DEtransform <- function(x, method=c("blind", "pooled", "pooled-CR", "per-condition"), fitType=c("parametric", "local"), noise=TRUE, seed=1) {
     if (seed>0) set.seed(seed)
     method <- match.arg(method)
     fitType <- match.arg(fitType)
@@ -161,7 +157,7 @@ DEtransform <- function(x,
         tmp <- unlist(apply(x, 2, function(x) {
             x <- sort(unique(x))
             x <- cbind(x[1:(length(x)-1)], x[2:length(x)])
-            x <- cbind(x[, 1], sqrt(rowVar(x)))
+            x <- cbind(x[, 1], sqrt(frvarna(x)))
             return(list(x))
         }), recursive=FALSE)
         tmp <- cbind(unlist(lapply(tmp, function(x) x[, 1]), use.names=F), unlist(lapply(tmp, function(x) x[, 2]), use.names=F))

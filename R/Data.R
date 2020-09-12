@@ -140,3 +140,15 @@ NULL
 #' @keywords data
 #' @format list of lists: for 50 Hallmark gene sets, one list each comprising all founders
 NULL
+
+
+#' ARACNe regulons derived from a) 242 CUMC pancreatic specimen (PanIN/IPMN/PDA) and b) 426 ICGC
+#' Canada PDA specimen (PDA primaries and metastasis)
+#'
+#' @name pda_regulons
+#' @docType data
+#' @author HCM
+#' @keywords data
+#' @format list of regulons, each comprising one regulon with its RP
+NULL
+

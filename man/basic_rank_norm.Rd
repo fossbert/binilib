@@ -4,8 +4,7 @@
 \alias{basic_rank_norm}
 \title{Basic rank normalization of a gene expression matrix}
 \usage{
-basic_rank_norm(counts, tpm = FALSE, pmOne = TRUE,
-  gausstrans = FALSE, ...)
+basic_rank_norm(counts, tpm = FALSE, pmOne = TRUE, gausstrans = FALSE, ...)
 }
 \arguments{
 \item{counts}{Matrix containing raw read counts (generally).}

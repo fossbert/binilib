@@ -5,12 +5,14 @@
 \alias{regulatorNames}
 \title{Information on 6068 regulatory genes used in the Califanoverse
 See Alvarez, Nature Genetics, 2016 for details}
-\format{List with three elements containing gene symbols for the following categories
+\format{
+List with three elements containing gene symbols for the following categories
 \describe{
 \item{TF}{character vector transcription factor gene symbols, n = 1856}
 \item{CoTF}{character vector of co-transcriptional regulator gene symbols, n = 672}
 \item{Signaling}{character vector of signaling proteins, n = 3540}
-}}
+}
+}
 \description{
 Information on 6068 regulatory genes used in the Califanoverse
 See Alvarez, Nature Genetics, 2016 for details

@@ -4,8 +4,14 @@
 \alias{colorScale}
 \title{colorScale}
 \usage{
-colorScale(x, color = c("royalblue", "firebrick2"), gama = 1,
-  alpha = 1, scmax = 0, nacol = "grey80")
+colorScale(
+  x,
+  color = c("royalblue", "firebrick2"),
+  gama = 1,
+  alpha = 1,
+  scmax = 0,
+  nacol = "grey80"
+)
 }
 \arguments{
 \item{x}{Vector or matrix of numeric values}

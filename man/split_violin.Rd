@@ -4,8 +4,17 @@
 \alias{split_violin}
 \title{Split violin plot}
 \usage{
-split_violin(x, s1, s2, cols = c("cornflowerblue", "salmon"), ylb = "",
-  rug = FALSE, legpos = "topleft", rotate_xlabels = NULL, ...)
+split_violin(
+  x,
+  s1,
+  s2,
+  cols = c("cornflowerblue", "salmon"),
+  ylb = "",
+  rug = FALSE,
+  legpos = "topleft",
+  rotate_xlabels = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{a numeric variable to be split in two ways}

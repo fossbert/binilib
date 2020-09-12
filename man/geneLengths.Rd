@@ -5,11 +5,13 @@
 \alias{geneLengths}
 \title{Information on gene lengths.
 As derived from TxDb.Hsapiens.UCSC.hg19.knownGene and TxDb.Mmusculus.UCSC.mm9.knownGene annotation}
-\format{List with two elements containing human and mouse data, respectively, each with:
+\format{
+List with two elements containing human and mouse data, respectively, each with:
 \describe{
 \item{Symbol}{named integer vector of gene lengths, where names represent gene symbols}
 \item{Entrez}{named integer vector of gene lengths, where names represent Entrez IDs}
-}}
+}
+}
 \source{
 \url{http://bioconductor.org/packages/release/data/annotation/html/TxDb.Hsapiens.UCSC.hg19.knownGene.html}
 

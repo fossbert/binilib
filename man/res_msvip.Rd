@@ -12,10 +12,6 @@ res_msvip(mrst, padjust = c("fdr", "bonferroni", "none"))
 \item{mrst}{msviper object}
 
 \item{padjust}{method for adjusting p-values for multiple hypothesis testing}
-
-\item{mrst}{msviper object}
-
-\item{padjust}{method for adjusting p-values for multiple hypothesis testing}
 }
 \value{
 a tibble with genes, NES, p-values and FDR

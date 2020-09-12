@@ -4,9 +4,17 @@
 \alias{plot.gsea1}
 \title{Plot results from a one-tailed GSEA}
 \usage{
-\method{plot}{gsea1}(gsea1, color = "cornflowerblue", main = "",
-  plotSignature = FALSE, signatureNames = NULL, signatureType = NULL,
-  ledge = TRUE, fixY = NULL, ...)
+\method{plot}{gsea1}(
+  gsea1,
+  color = "cornflowerblue",
+  main = "",
+  plotSignature = FALSE,
+  signatureNames = NULL,
+  signatureType = NULL,
+  ledge = TRUE,
+  fixY = NULL,
+  ...
+)
 }
 \arguments{
 \item{gsea1}{gsea1 object as returned from \code{gsea1T}}

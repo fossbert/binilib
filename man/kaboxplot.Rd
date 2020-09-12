@@ -4,9 +4,14 @@
 \alias{kaboxplot}
 \title{Plot quantiles per column for a numeric matrix}
 \usage{
-kaboxplot(eset, quants = c(0.05, 0.25, 0.5, 0.75, 0.95),
-  brewer_name = "Dark2", ylab = "Normalized expression",
-  xlab = "Samples", ...)
+kaboxplot(
+  eset,
+  quants = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  brewer_name = "Dark2",
+  ylab = "Normalized expression",
+  xlab = "Samples",
+  ...
+)
 }
 \arguments{
 \item{eset}{numeric matrix typically containing gene expression data}
