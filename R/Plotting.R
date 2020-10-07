@@ -11,9 +11,8 @@ mypar <- function(a = 1, b = 1, brewer_n = 9, brewer_name = "Set1", ...) {
 
     graphics::par(mfrow = c(a, b), ...)
     grDevices::palette(RColorBrewer::brewer.pal(brewer_n, brewer_name))
-    tmp <- ggplot2::theme_bw() + ggplot2::theme(axis.text = element_text(colour = 'black', size = 10))
+    tmp <- ggplot2::theme_bw() + ggplot2::theme(text = element_text(size = 8, family = 'Arial'))
     ggplot2::theme_set(tmp)
-
 }
 
 #' Plot quantiles per column for a numeric matrix

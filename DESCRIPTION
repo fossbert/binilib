@@ -21,6 +21,7 @@ Collate:
     'MatrixOp.R'
     'Normalization.R'
     'Plotting.R'
+    'PurIST.R'
     'clustering_mja.R'
     'geneConversions.R'
     'helper_functions.R'

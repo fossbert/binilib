@@ -30,7 +30,7 @@ plot_OneReg_MultSig <- function(sigmat,
     layout(cbind(1,2,3), widths = c(1,1,6))
 
     # Plot 1: NES and FDR matrix
-    #if(is.null)
+
     if(is.null(nes)) nes <- vapply(tmp, function(i) i$nes, FUN.VALUE = numeric(1))
 
     # change order for plot
