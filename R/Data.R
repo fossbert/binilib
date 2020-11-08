@@ -30,7 +30,7 @@ NULL
 NULL
 
 #' Gene expression signatures used to classify PDA.
-#' Derived from Collisson et al., Moffitt et al. and Bailey et al.
+#' Derived from Collisson et al., Moffitt et al., Chan-Seng-Yue et al. and Bailey et al.
 #'
 #' @name pdaClassifiers
 #' @docType data
