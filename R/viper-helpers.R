@@ -23,11 +23,11 @@ vpres2regulon <- function(vpres,
 
     switch(dir,
            both = {idx <- c(1:nn, (nrow(vpres)-(nn-1)):nrow(vpres))
-           tfm <- rep(c(1,-1), each = nn) },
+           tfm <- rep(c(.999, -.999), each = nn) },
            up = {idx <- 1:nn
-           tfm <- rep(1, nn)},
+           tfm <- rep(.999, nn)},
            down = {idx <- (nrow(vpres)-(nn-1)):nrow(vpres)
-           tfm <- rep(-1, nn)}
+           tfm <- rep(-.999, nn)}
     )
 
     if(reverse) tfm <- tfm * -1
@@ -44,7 +44,7 @@ vpres2regulon <- function(vpres,
         smp <- vpres[,i]
         names(tfm) <- rownames(vpres[order(smp, decreasing = TRUE), ,drop = FALSE])[idx]
 
-        list(tfmode = tfm, likelihood = unname(abs(tfm)))
+        list(tfmode = tfm, likelihood = rep(1/length(tfm), length(tfm)))
 
     }, vpres = vpres)
     names(tmp) <- colnames(vpres)
@@ -162,7 +162,7 @@ geneSets2regulon <- function(geneSets) {
 
     tmp <- lapply(geneSets, function(i){
 
-        tm <- rep(1, length(i))
+        tm <- rep(.999, length(i))
         names(tm) <- i
         list(tfmode = tm, likelihood = rep(1/length(i), length(i)))
 
