@@ -9,7 +9,7 @@ reg2tibble(reg, annotate = TRUE)
 \arguments{
 \item{reg}{regulon object - see output of viper::aracne2regulon}
 
-\item{annotate}{logical, whether to add a column on target type in ouptu}
+\item{annotate}{logical, whether to add a column on target type in ouput}
 }
 \value{
 a tibble with targets and metrics (MOR/likelihood)

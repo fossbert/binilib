@@ -10,22 +10,19 @@ LazyData: true
 License: CC0
 RoxygenNote: 7.1.1
 Depends: tidyverse
-Imports: magrittr, methods, RColorBrewer, limma, stringr
+Imports: magrittr, methods, RColorBrewer, limma, stringr, DESeq2
 Collate: 
     'Data.R'
     'GSEA_Lim.R'
     'GSEA_Subramanian.R'
     'classes.R'
     'GSEA_null.R'
-    'Integration.R'
     'MatrixOp.R'
     'Normalization.R'
     'Plotting.R'
     'PurIST.R'
-    'clustering_mja.R'
     'geneConversions.R'
     'helper_functions.R'
     'multiple_signatures_plot.R'
     'plot_gsea.R'
-    'reorder_within.R'
     'viper-helpers.R'

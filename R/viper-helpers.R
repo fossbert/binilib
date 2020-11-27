@@ -56,7 +56,7 @@ vpres2regulon <- function(vpres,
 #' transform a regulon object to a data frame / tibble
 #'
 #' @param reg regulon object - see output of viper::aracne2regulon
-#' @param annotate logical, whether to add a column on target type in ouptu
+#' @param annotate logical, whether to add a column on target type in ouput
 #' @return a tibble with targets and metrics (MOR/likelihood)
 #' @export
 
@@ -72,11 +72,11 @@ reg2tibble <- function(reg, annotate = TRUE) {
         if(annotate) {
             data("regulatorNames")
 
-            tmp2 <- tibble::tibble(target = unlist(regulators, use.names = FALSE),
-                                   type = rep(names(regulators), purrr::map_int(regulators, length)))
+            tmp2 <- tibble::tibble(target = unlist(regulatorNames, use.names = FALSE),
+                                   type = rep(names(regulatorNames), purrr::map_int(regulatorNames, length)))
 
             dplyr::left_join(tmp, tmp2, by = "target") %>%
-                dplyr::mutate(type = stringr::str_replace_na(type, "None"))
+                dplyr::mutate(type = stringr::str_replace_na(type, "Other"))
 
         } else tmp
 
