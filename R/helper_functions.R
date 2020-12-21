@@ -497,3 +497,25 @@ topN_mat <- function(mat,
 }
 
 
+#' Center heatmap color gradient at zero
+#'
+#' Little helper function to center a color palette around 0 for heatmaps depicting relative signatures such
+#' as log2 fold changes or Z-scores. Mostly tailored towards the pheatmap R package.
+#'
+#' @param emat numeric matrix
+#' @param color_palette vector representing colors, no specific type needed, only used for length
+#' @return a numeric vector specifying breaks for a heatmap (pheatmap package)
+#' @export
+
+
+brks_heatmap <- function(emat, color_palette){
+
+    rng <- range(emat, na.rm = TRUE)
+    lpal <- length(color_palette)
+
+    c(seq(rng[1], 0, length.out=ceiling(lpal/2) + 1),
+    seq(rng[2]/length(hcols), rng[2], length.out=floor(lpal/2)))
+
+}
+
+
