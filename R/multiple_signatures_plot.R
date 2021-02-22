@@ -27,6 +27,9 @@ plot_OneReg_MultSig <- function(sigmat,
     x <- seq(nrow(sigmat))
     y <- ncol(sigmat)
 
+    # x-axis intervals
+    xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
+
     layout(cbind(1,2,3), widths = c(1,1,6))
 
     # Plot 1: NES and FDR matrix
@@ -39,32 +42,32 @@ plot_OneReg_MultSig <- function(sigmat,
 
     mx <- max(abs(nes), na.rm = TRUE)
     if(mx > 5) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-5, 5, length.out = 101)
-    par(mar = c(2.1, 2.1, 4.1, .05))
+    par(mar = c(2.1, 1.1, 2.1, .05))
     hcols <- c('royalblue', 'white', 'firebrick2')
     image(1, seq(y), t(nes), ylab="", xlab="",
           col = colorRampPalette(hcols)(length(brks)-1),
           breaks = brks,
           axes = FALSE, yaxs = "i")
-    text(rep(1, y), seq(y), round(nes, 2), col = 'black', font = 2)
+    text(rep(1, y), seq(y), round(nes, 2), col = 'black', ...)
     box()
     grid(1, y, col="black", lty=1)
-    mtext('NES', at = 1, line = 1)
+    mtext('NES', at = 1, line = 0, ...)
 
     # Plot 2: FDR
     if(is.null(padj)) padj <- p.adjust(vapply(tmp, function(i) i$pval, FUN.VALUE = numeric(1)), 'fdr')
     padj <- padj[ordx]
-    par(mar = c(2.1, 0.05, 4.1, 1.1))
+    par(mar = c(2.1, 0.05, 2.1, 0.1))
     plot(NA, xlim = c(0, 1), ylim = c(0, y),
          type = 'n', axes = FALSE, ylab = "", xlab = "", yaxs = "i")
-    text(rep(.5, y), seq(y)-.5, signif(padj, 2), col = 'black')
+    text(rep(.5, y), seq(y)-.5, signif(padj, 2), col = 'black', ...)
     grid(1, y, col="black", lty=1)
-    mtext('FDR', at = .5, line = 1)
+    mtext('FDR', at = .5, line = 0, ...)
 
     # Plot 3: targets in signature
     xlimit <- c(0, length(x)*(1+.15*max(nchar(colnames(sigmat)))/8))
     tmp <- tmp[ordx]
 
-    par(mar = c(2.1, 1.1, 4.1, 1.1))
+    par(mar = c(2.1, 0.1, 2.1, 1.1))
     plot(0, type="n",
          ylim=c(0, y),
          xlim = xlimit,
@@ -86,8 +89,8 @@ plot_OneReg_MultSig <- function(sigmat,
         alphas[(middle+1):length(alphas)] <- seq(100, 255, length.out = length(alphas)-middle)
 
         gs2 <- tmp[[i]]
-        blim_up <- c(i-.5, i)
-        blim_down <- c(i-1, i-.5)
+        blim_up <- c(i-.5, i-.2)
+        blim_down <- c(i-.8, i-.5)
 
         xpos <- gs2$gs_idx_pos
         xneg <- gs2$gs_idx_neg
@@ -100,7 +103,8 @@ plot_OneReg_MultSig <- function(sigmat,
                           blue = tmpcol[3],
                           maxColorValue = 255,
                           alpha = alphas[idxpos])
-            lines(x = rep(x[idxpos], 2), y = blim_up, col = barcol, lwd = .8)
+            lines(x = rep(x[idxpos], 2),
+                  y = blim_up, col = barcol, lwd = .8)
         }
 
         tmpcol <- cols[,2]
@@ -113,16 +117,21 @@ plot_OneReg_MultSig <- function(sigmat,
                           alpha = alphas[idxneg])
             lines(x = rep(x[idxneg], 2), y = blim_down, col = barcol, lwd = .8)
         }
-        abline(v = length(x))
-        grid(0, y, col = 'black')
 
-        #rect(xleft = 0, ybottom = min(c(blim_down, blim_up)),
-         #    xright = length(x), ytop = max(c(blim_down, blim_up)))
+        lines(x = c(0, length(x)), y = rep(blim_down[2], 2))
+        rect(xleft = 0,
+             ybottom = blim_down[1],
+             xright = length(x),
+             ytop = blim_up[2])
+
+        # abline(v = length(x))
+        # grid(0, y, col = 'black')
 
     }
-    text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], adj = 0)
-    mtext(paste(tf, 'regulon'), at = floor(length(x)/2), line = 1)
-    mtext('Signature', at = length(x), adj = 0, line = 1)
+    axis(side = 3, at = xax_itvl, tck = -.01, mgp=c(3,0,0),
+         cex.axis = 1/2, ...)
+    text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], adj = 0, ...)
+    mtext(paste(tf, 'regulon'), side = 1, at = floor(length(x)/2), line = 0, ...)
 
     par(mar = omar, mfrow = c(1,1), mfcol = c(1,1), las = 0)
 }
@@ -162,49 +171,12 @@ plot_fgseaRes <- function(ges,
 
     x <- seq(length(ges))
 
+    # x-axis intervals
+    xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
 
     layout(cbind(1,2,3), widths = c(1,1,6))
 
-    #    layout(rbind(c(1,1,2), c(3,4,5)),
- #          widths = c(1,1,6),
-  #         heights = c(1, 5))
-
-  #  if(plotSignature){
-   #     layout(rbind(1,2),heights=c(1,3))
-    #    par(mar = c(0, 3.1, 0.1, 1), mgp = c(2, .7, 0))
-    #    plot(x, y,
-    #         bty = 'n',
-    #         type = "n",
-    #         xaxt = 'n',
-    #         yaxs = 'i',
-    #         xlab = '',
-    #         ylab = signatureType,
-    #         las = 1,
-    #         cex.axis = 0.8,
-    #         cex.lab = 0.8)
-    #
-     #   switch(sigsort,
-      #         '-1' = {
-      #             polygon(c(min(x), x[y <= 0]), c(0, y[y <= 0]), border = NA, col = "gray80")
-      #             polygon(c(max(x), x[y > 0]), c(0, y[y > 0]), border = NA, col = "gray80")
-      #             if(!is.null(signatureNames)) {
-      #                 text(min(x), max(y)/5, label = signatureNames[1], pos = 4)
-      #                 text(max(x), min(y)/5, label = signatureNames[2], pos = 2)
-      #             }
-      #         },
-      #         '1' = {
-      #             polygon(c(min(x), x[y > 0]), c(0, y[y > 0]), border = NA, col = "gray80")
-      #             polygon(c(max(x), x[y <= 0]), c(0, y[y <= 0]), border = NA, col = "gray80")
-      #             if(!is.null(signatureNames)) {
-      #                 text(min(x), min(y)/5, label = signatureNames[1], pos = 4)
-      #                 text(max(x), max(y)/5, label = signatureNames[2], pos = 2)
-      #             }
-      #         })
-      #  abline(h = 0, lty = 2, lwd = 2)
-#    }
-
-    # Get statistics from fgsea output
-
+        # Get statistics from fgsea output
     if(!any(names(geneSets) %in% fgseaRes$pathway)){
         stop('Could not find any results for indicated gene sets!')
     }
@@ -228,30 +200,30 @@ plot_fgseaRes <- function(ges,
 
     mx <- max(abs(nes), na.rm = TRUE)
     if(mx > 3) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-3, 3, length.out = 101)
-    par(mar = c(2.1, 2.1, 4.1, .05))
+    par(mar = c(2.1, 1.1, 2.1, .05))
     hcols <- c('royalblue', 'white', 'firebrick2')
     image(1, seq(y), t(nes), ylab="", xlab="",
           col = colorRampPalette(hcols)(length(brks)-1),
           breaks = brks,
           axes = FALSE,
           yaxs = "i")
-    text(rep(1, y), seq(y), round(nes, 2), col = 'black', font = 2)
+    text(rep(1, y), seq(y), round(nes, 2), col = 'black', ...)
     box()
     grid(1, y, col="black", lty=1)
-    mtext('NES', at = 1, line = 1)
+    mtext('NES', at = 1, line = 0, ...)
 
     # Plot 2: FDR
-    par(mar = c(2.1, 0.05, 4.1, 1.1))
+    par(mar = c(2.1, 0.05, 2.1, .05))
     plot(NA, xlim = c(0, 1), ylim = c(0, y),
          type = 'n', axes = FALSE, ylab = "", xlab = "", yaxs = "i")
-    text(rep(.5, y), seq(y)-.5, signif(padj, 2), col = 'black')
+    text(rep(.5, y), seq(y)-.5, signif(padj, 2), col = 'black', ...)
     grid(1, y, col="black", lty=1)
-    mtext('FDR', at = .5, line = 1)
+    mtext('FDR', at = .5, line = 0, ...)
 
     # Plot 3: targets in signature
     xlimit <- c(0, length(x)*(1+.2*max(nchar(names(tmp)))/8))
 
-    par(mar = c(2.1, 0.1, 4.1, 1.1))
+    par(mar = c(2.1, 0.05, 2.1, 1.1))
     plot(0, type="n",
          ylim=c(0, y),
          xlim = xlimit,
@@ -280,7 +252,7 @@ plot_fgseaRes <- function(ges,
         if(ledge_only) {
             gene_pos <- gs1$ledge_index
         } else gene_pos <- gs1$gs_idx
-        blim <- c(i-1, i)
+        blim <- c(i-.8, i-.2)
 
         for(j in seq_along(gene_pos)){
             idx <- gene_pos[j]
@@ -293,11 +265,11 @@ plot_fgseaRes <- function(ges,
             lines(x = rep(x[idx], 2), y = blim,
                   col = barcol, lwd = .8)
         }
-        abline(v = length(x))
-        grid(0, y, col = 'black')
 
-        #rect(xleft = 0, ybottom = min(c(blim_down, blim_up)),
-        #    xright = length(x), ytop = max(c(blim_down, blim_up)))
+        rect(xleft = 0,
+             ybottom = blim[1],
+             xright = length(x),
+             ytop = blim[2])
 
     }
     if(strip_PWnames){
@@ -306,13 +278,13 @@ plot_fgseaRes <- function(ges,
         pws <- names(tmp)
     }
     text(rep(length(x)*1.02, y), seq(y)-.5, pws, adj = 0, ...)
+    axis(side = 3, at = xax_itvl, tck = -0.01, mgp=c(3,0,0),
+         cex.axis = 1/2, ...)
 
     if(!is.null(signatureNames)){
-        if(length(signatureNames) != 2) stop('Need 2 (!) signature names!')
-        mtext(signatureNames[1], at = 0, line = 1, adj = 0)
-        mtext(signatureNames[2], at = length(x), line = 1, adj = 1)
+      mtext(text = signatureNames[2], side = 1, line = 0, at = length(x), adj = 1, ...)
+      mtext(text = signatureNames[1], side = 1, line = 0, at = 0, adj = 0, ...)
     }
-    mtext('Pathway', at = (length(x) + xlimit[2])/2, line = 1)
 
     par(mar = omar, mfrow = c(1,1), mfcol = c(1,1), las = 0)
 }
@@ -332,15 +304,14 @@ plot_fgseaRes <- function(ges,
 #' @param gs_label single character string to label the gene set under investigation
 #' @param ... given for compatibility, particularly for the adjustment of cex for various text labels
 #' @return Nothing, a plot is generated in the default output device
-#' @export
-#' @examples {
+#' @examples
 #' sigmat <- matrix(rnorm(1e5), ncol = 10, nrow = 1e4)
 #' rownames(sigmat) <- paste0('Gene', seq(nrow(sigmat)))
 #' colnames(sigmat) <- paste0('Sample', seq(ncol(sigmat)))
 #' set.seed(42)
 #' gs <- sample(rownames(sigmat), size = 100)
 #' plot_OneGs_MultSig(sigmat = sigmat, geneset = gs)
-#' }
+#' @export
 
 plot_OneGs_MultSig <- function(sigmat,
                                geneset,
@@ -365,8 +336,7 @@ plot_OneGs_MultSig <- function(sigmat,
   tmp <- tmp[ordx]
 
   # x-axis intervals
-  xax_itvl <- seq(floor(length(x)/4000))*4000
-  xax_lbls <- c('High', xax_itvl, 'Low')
+  xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
 
   layout(cbind(1,2), widths = c(1,6))
 
@@ -441,8 +411,8 @@ plot_OneGs_MultSig <- function(sigmat,
          ytop = blim[2])
 
   }
-  axis(side = 3, at = c(1, xax_itvl, length(x)), tck = -0.01, mgp=c(3,0,0),
-       labels = xax_lbls, cex.axis = 1/3, ...)
+  axis(side = 3, at = xax_itvl, tck = -0.01, mgp=c(3,0,0),
+       cex.axis = 1/2, ...)
   text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], adj = 0, ...)
   if(!is.null(gs_label)) {
     mtext(text = paste0(gs_label,' (n=', length(geneset), ')'), at = floor(length(x)/2),
@@ -456,10 +426,9 @@ plot_OneGs_MultSig <- function(sigmat,
 
 
 
-
 .get_index <- function(ges_mat, geneset){
-  lapply(seq(ncol(sigmat)), function(i){
-    si <- sort(sigmat[,i], decreasing = TRUE)
+  lapply(seq(ncol(ges_mat)), function(i){
+    si <- sort(ges_mat[,i], decreasing = TRUE)
     idx <- which(names(si) %in% geneset)
     return(idx)
     })
