@@ -318,3 +318,149 @@ plot_fgseaRes <- function(ges,
 }
 
 
+
+
+#' Plot ranks of a given gene set across several gene expression profiles from a numeric matrix.
+#'
+#' This function generates a plot of the member genes of a given gene set across multiple signatures.
+#' Its first intention is to illustrate the so called 'percent rank' of a given gene from a given
+#' gene set.
+#'
+#' @param sigmat gene expression matrix, usually of raw values such as read counts, TPM or FPKM
+#' @param geneset a character vector representing one gene set
+#' @param color single character string indicating a color for the bar lines
+#' @param gs_label single character string to label the gene set under investigation
+#' @param ... given for compatibility, particularly for the adjustment of cex for various text labels
+#' @return Nothing, a plot is generated in the default output device
+#' @export
+#' @examples {
+#' sigmat <- matrix(rnorm(1e5), ncol = 10, nrow = 1e4)
+#' rownames(sigmat) <- paste0('Gene', seq(nrow(sigmat)))
+#' colnames(sigmat) <- paste0('Sample', seq(ncol(sigmat)))
+#' set.seed(42)
+#' gs <- sample(rownames(sigmat), size = 100)
+#' plot_OneGs_MultSig(sigmat = sigmat, geneset = gs)
+#' }
+
+plot_OneGs_MultSig <- function(sigmat,
+                               geneset,
+                               color='black',
+                               gs_label = NULL,
+                               ...) {
+
+  omar <- par()$mar
+  omgp <- par()$mgp
+
+  # x- and y-axis
+  x <- seq(nrow(sigmat))
+  y <- ncol(sigmat)
+
+  tmp <- .get_index(ges_mat = sigmat, geneset = geneset)
+
+    # order statistics
+  pct_rank <- apply(sigmat, 2, function(i) rank(i, na.last = 'keep')/(length(!is.na(i))+1))
+  common <- intersect(rownames(sigmat), geneset)
+  avg_pct_rank <- colMeans(pct_rank[common, ], na.rm = TRUE)
+  ordx <- order(avg_pct_rank)
+  tmp <- tmp[ordx]
+
+  # x-axis intervals
+  xax_itvl <- seq(floor(length(x)/4000))*4000
+  xax_lbls <- c('High', xax_itvl, 'Low')
+
+  layout(cbind(1,2), widths = c(1,6))
+
+  # Plot 1: Avg pct rank matrix
+
+  # change order for plot
+  avg_pct_rank <- avg_pct_rank[ordx]
+  par(mar = c(2.1, 1.1, 2.1, 0.1))
+  plot(0,
+       type="n",
+       ylim=c(0, y),
+       axes=FALSE,
+       ylab="",
+       xlab="",
+       yaxs="i")
+  text(rep(1, y), seq(y)-.5, round(avg_pct_rank, 2), ...)
+  box()
+  grid(1, y, col="black", lty=1)
+  mtext(text = 'Average percent rank', side = 2, line = 0, ...)
+
+  # # Plot 2: FDR
+  # if(is.null(padj)) padj <- p.adjust(vapply(tmp, function(i) i$pval, FUN.VALUE = numeric(1)), 'fdr')
+  # padj <- padj[ordx]
+  # par(mar = c(2.1, 0.05, 4.1, 1.1))
+  # plot(NA, xlim = c(0, 1), ylim = c(0, y),
+  #      type = 'n', axes = FALSE, ylab = "", xlab = "", yaxs = "i")
+  # text(rep(.5, y), seq(y)-.5, signif(padj, 2), col = 'black')
+  # grid(1, y, col="black", lty=1)
+  # mtext('FDR', at = .5, line = 1)
+
+  # Plot 3: targets in signature
+  xlimit <- c(0, length(x)*(1+.15*max(nchar(colnames(sigmat)))/8))
+
+  par(mar = c(2.1, 0.1, 2.1, 1.1))
+  plot(0, type="n",
+       ylim=c(0, y),
+       xlim = xlimit,
+       axes=FALSE,
+       ylab="",
+       xlab="",
+       yaxs="i")
+
+  # set up alphas to be smallest in the middle
+  ap1 <- rank(x, na.last = 'keep')/(length(!is.na(x)) + 1)
+  ap2 <- abs(ap1 - 0.5) * 2
+  ap3 <- cut(ap2, breaks = quantile(ap2), labels = FALSE)*.25
+  rgb_val <- col2rgb(col = color)[,1]/255
+
+  # bar plots
+  for (i in seq_along(tmp)) {
+
+    xpos <- tmp[[i]]
+    blim <- c(i-.8, i-.2)
+
+    for(j in seq_along(xpos)){
+      idxpos <- xpos[j]
+      barcol <- rgb(rgb_val[1],
+                    rgb_val[2],
+                    rgb_val[3],
+                    alpha = ap3[idxpos])
+
+      lines(x = rep(x[idxpos], 2),
+            y = blim,
+            col = barcol,
+            lwd = .8)
+
+    }
+
+    rect(xleft = 0,
+         ybottom = blim[1],
+         xright = length(x),
+         ytop = blim[2])
+
+  }
+  axis(side = 3, at = c(1, xax_itvl, length(x)), tck = -0.01, mgp=c(3,0,0),
+       labels = xax_lbls, cex.axis = 1/3, ...)
+  text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], adj = 0, ...)
+  if(!is.null(gs_label)) {
+    mtext(text = paste0(gs_label,' (n=', length(geneset), ')'), at = floor(length(x)/2),
+          side = 1, line = 0, ...)
+  } else {
+    mtext(text = paste0('Gene set (n=', length(geneset), ')'), at = floor(length(x)/2),
+          side = 1, line = 0, ...)
+  }
+  par(mar = omar, mfrow = c(1,1), mfcol = c(1,1), las = 0)
+}
+
+
+
+
+.get_index <- function(ges_mat, geneset){
+  lapply(seq(ncol(sigmat)), function(i){
+    si <- sort(sigmat[,i], decreasing = TRUE)
+    idx <- which(names(si) %in% geneset)
+    return(idx)
+    })
+  }
