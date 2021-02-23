@@ -29,6 +29,12 @@ plot_OneReg_MultSig <- function(sigmat,
 
     # x-axis intervals
     xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
+    # if there is a substantial difference between the last interval and the
+    # length of the signature, go all the way
+    diff_end <- length(x) - xax_itvl[length(xax_itvl)]
+    if(diff_end > 1000){
+      xax_itvl[length(xax_itvl)] <- x
+    }
 
     layout(cbind(1,2,3), widths = c(1,1,6))
 
@@ -173,6 +179,12 @@ plot_fgseaRes <- function(ges,
 
     # x-axis intervals
     xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
+    # if there is a substantial difference between the last interval and the
+    # length of the signature, go all the way
+    diff_end <- length(x) - xax_itvl[length(xax_itvl)]
+    if(diff_end > 1000){
+      xax_itvl[length(xax_itvl)] <- x
+    }
 
     layout(cbind(1,2,3), widths = c(1,1,6))
 
@@ -337,6 +349,12 @@ plot_OneGs_MultSig <- function(sigmat,
 
   # x-axis intervals
   xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
+  # if there is a substantial difference between the last interval and the
+  # length of the signature, go all the way
+  diff_end <- length(x) - xax_itvl[length(xax_itvl)]
+  if(diff_end > 1000){
+    xax_itvl[length(xax_itvl)] <- x
+  }
 
   layout(cbind(1,2), widths = c(1,6))
 
