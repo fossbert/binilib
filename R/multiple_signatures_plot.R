@@ -33,7 +33,7 @@ plot_OneReg_MultSig <- function(sigmat,
     # length of the signature, go all the way
     diff_end <- length(x) - xax_itvl[length(xax_itvl)]
     if(diff_end > 1000){
-      xax_itvl[length(xax_itvl)] <- x
+      xax_itvl[length(xax_itvl)] <- length(x)
     }
 
     layout(cbind(1,2,3), widths = c(1,1,6))
@@ -183,7 +183,7 @@ plot_fgseaRes <- function(ges,
     # length of the signature, go all the way
     diff_end <- length(x) - xax_itvl[length(xax_itvl)]
     if(diff_end > 1000){
-      xax_itvl[length(xax_itvl)] <- x
+      xax_itvl[length(xax_itvl)] <- length(x)
     }
 
     layout(cbind(1,2,3), widths = c(1,1,6))
@@ -353,7 +353,7 @@ plot_OneGs_MultSig <- function(sigmat,
   # length of the signature, go all the way
   diff_end <- length(x) - xax_itvl[length(xax_itvl)]
   if(diff_end > 1000){
-    xax_itvl[length(xax_itvl)] <- x
+    xax_itvl[length(xax_itvl)] <- length(x)
   }
 
   layout(cbind(1,2), widths = c(1,6))
