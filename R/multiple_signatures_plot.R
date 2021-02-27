@@ -400,7 +400,8 @@ plot_OneGs_MultSig <- function(sigmat,
   # set up alphas to be smallest in the middle
   ap1 <- rank(x, na.last = 'keep')/(length(!is.na(x)) + 1)
   ap2 <- abs(ap1 - 0.5) * 2
-  ap3 <- cut(ap2, breaks = quantile(ap2), labels = FALSE)*.25
+  ap3 <- cut(ap2, breaks = quantile(ap2), labels = FALSE, include.lowest=TRUE)
+  ap4 <- ap3*1/length(unique(ap3))
   rgb_val <- col2rgb(col = color)[,1]/255
 
   # bar plots
@@ -414,7 +415,7 @@ plot_OneGs_MultSig <- function(sigmat,
       barcol <- rgb(rgb_val[1],
                     rgb_val[2],
                     rgb_val[3],
-                    alpha = ap3[idxpos])
+                    alpha = ap4[idxpos])
 
       lines(x = rep(x[idxpos], 2),
             y = blim,
