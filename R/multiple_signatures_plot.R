@@ -404,7 +404,7 @@ plot_OneGs_MultSig <- function(sigmat,
        yaxs="i")
 
   # set up alphas to be smallest in the middle
-  if(scale_alpha){
+  if(scale_alphas){
     ap1 <- rank(x, na.last = 'keep')/(length(!is.na(x)) + 1)
     ap2 <- abs(ap1 - 0.5) * 2
     ap3 <- cut(ap2, breaks = quantile(ap2, probs = seq(0, 1, .05)), labels = FALSE, include.lowest=TRUE)
