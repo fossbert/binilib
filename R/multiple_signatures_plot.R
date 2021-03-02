@@ -313,7 +313,9 @@ plot_fgseaRes <- function(ges,
 #' @param sigmat gene expression matrix, usually of raw values such as read counts, TPM or FPKM
 #' @param geneset a character vector representing one gene set
 #' @param color single character string indicating a color for the bar lines
+#' @param signatureNames Character vector of length 2, specifying the extremes of the signature
 #' @param gs_label single character string to label the gene set under investigation
+#' @param column_col vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.
 #' @param ... given for compatibility, particularly for the adjustment of cex for various text labels
 #' @return Nothing, a plot is generated in the default output device
 #' @examples
@@ -328,7 +330,9 @@ plot_fgseaRes <- function(ges,
 plot_OneGs_MultSig <- function(sigmat,
                                geneset,
                                color='black',
+                               signatureNames = NULL,
                                gs_label = NULL,
+                               column_col = NULL,
                                ...) {
 
   omar <- par()$mar
@@ -432,7 +436,18 @@ plot_OneGs_MultSig <- function(sigmat,
   }
   axis(side = 3, at = xax_itvl, tck = -0.01, mgp=c(3,0,0),
        cex.axis = 1/2, ...)
-  text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], adj = 0, ...)
+
+  if(is.null(column_col)) {
+    text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], adj = 0, ...)
+  } else {
+    text(rep(length(x)*1.02, y), seq(y)-.5, colnames(sigmat)[ordx], col = column_col[ordx], adj = 0, ...)
+  }
+
+  if(!is.null(signatureNames)){
+    mtext(text = signatureNames[2], side = 1, line = 0, at = length(x), adj = 1, ...)
+    mtext(text = signatureNames[1], side = 1, line = 0, at = 0, adj = 0, ...)
+  }
+
   if(!is.null(gs_label)) {
     mtext(text = paste0(gs_label,' (n=', length(geneset), ')'), at = floor(length(x)/2),
           side = 1, line = 0, ...)
