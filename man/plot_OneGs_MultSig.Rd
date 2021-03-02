@@ -4,7 +4,15 @@
 \alias{plot_OneGs_MultSig}
 \title{Plot ranks of a given gene set across several gene expression profiles from a numeric matrix.}
 \usage{
-plot_OneGs_MultSig(sigmat, geneset, color = "black", gs_label = NULL, ...)
+plot_OneGs_MultSig(
+  sigmat,
+  geneset,
+  color = "black",
+  signatureNames = NULL,
+  gs_label = NULL,
+  column_col = NULL,
+  ...
+)
 }
 \arguments{
 \item{sigmat}{gene expression matrix, usually of raw values such as read counts, TPM or FPKM}
@@ -13,7 +21,11 @@ plot_OneGs_MultSig(sigmat, geneset, color = "black", gs_label = NULL, ...)
 
 \item{color}{single character string indicating a color for the bar lines}
 
+\item{signatureNames}{Character vector of length 2, specifying the extremes of the signature}
+
 \item{gs_label}{single character string to label the gene set under investigation}
+
+\item{column_col}{vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.}
 
 \item{...}{given for compatibility, particularly for the adjustment of cex for various text labels}
 }
