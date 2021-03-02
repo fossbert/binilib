@@ -316,6 +316,7 @@ plot_fgseaRes <- function(ges,
 #' @param signatureNames Character vector of length 2, specifying the extremes of the signature
 #' @param gs_label single character string to label the gene set under investigation
 #' @param column_col vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.
+#' @param scale_alpha logical, whether to scale alpha values for bars, defaults to TRUE
 #' @param ... given for compatibility, particularly for the adjustment of cex for various text labels
 #' @return Nothing, a plot is generated in the default output device
 #' @examples
@@ -333,6 +334,7 @@ plot_OneGs_MultSig <- function(sigmat,
                                signatureNames = NULL,
                                gs_label = NULL,
                                column_col = NULL,
+                               scale_alphas = TRUE,
                                ...) {
 
   omar <- par()$mar
@@ -402,10 +404,13 @@ plot_OneGs_MultSig <- function(sigmat,
        yaxs="i")
 
   # set up alphas to be smallest in the middle
-  ap1 <- rank(x, na.last = 'keep')/(length(!is.na(x)) + 1)
-  ap2 <- abs(ap1 - 0.5) * 2
-  ap3 <- cut(ap2, breaks = quantile(ap2), labels = FALSE, include.lowest=TRUE)
-  ap4 <- ap3*1/length(unique(ap3))
+  if(scale_alpha){
+    ap1 <- rank(x, na.last = 'keep')/(length(!is.na(x)) + 1)
+    ap2 <- abs(ap1 - 0.5) * 2
+    ap3 <- cut(ap2, breaks = quantile(ap2, probs = seq(0, 1, .05)), labels = FALSE, include.lowest=TRUE)
+    ap <- ap3*1/length(unique(ap3))
+  } else ap <- rep(1, length(x)) # no scaling
+
   rgb_val <- col2rgb(col = color)[,1]/255
 
   # bar plots
@@ -419,7 +424,7 @@ plot_OneGs_MultSig <- function(sigmat,
       barcol <- rgb(rgb_val[1],
                     rgb_val[2],
                     rgb_val[3],
-                    alpha = ap4[idxpos])
+                    alpha = ap[idxpos])
 
       lines(x = rep(x[idxpos], 2),
             y = blim,

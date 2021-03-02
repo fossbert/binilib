@@ -11,6 +11,7 @@ plot_OneGs_MultSig(
   signatureNames = NULL,
   gs_label = NULL,
   column_col = NULL,
+  scale_alphas = TRUE,
   ...
 )
 }
@@ -28,6 +29,8 @@ plot_OneGs_MultSig(
 \item{column_col}{vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.}
 
 \item{...}{given for compatibility, particularly for the adjustment of cex for various text labels}
+
+\item{scale_alpha}{logical, whether to scale alpha values for bars, defaults to TRUE}
 }
 \value{
 Nothing, a plot is generated in the default output device
