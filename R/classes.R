@@ -7,6 +7,7 @@
 #' @importFrom DESeq2 estimateSizeFactors
 #' @importFrom DESeq2 estimateDispersions
 #' @importFrom DESeq2 getVarianceStabilizedData
+#' @importFrom fgsea fgsea
 NULL
 
 #' @importFrom magrittr %<>%
