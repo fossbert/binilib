@@ -390,8 +390,10 @@ plot_OneGs_MultSig <- function(sigmat,
 
     mx <- max(abs(nes), na.rm = TRUE)
     if(mx > 3) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-3, 3, length.out = 101)
-    par(mar = c(2.1, 1.1, 2.1, .05))
-    hcols <- c(color[2], 'white', color[1])
+
+     par(mar = c(2.1, 1.1, 2.1, .05))
+    # defaults to red blue scheme
+    hcols <- c('cornflowerblue', 'white', 'firebrick2')
     image(1, seq(y), t(nes), ylab="", xlab="",
           col = colorRampPalette(hcols)(length(brks)-1),
           breaks = brks,
