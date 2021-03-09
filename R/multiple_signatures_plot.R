@@ -317,6 +317,7 @@ plot_fgseaRes <- function(ges,
 #' @param gs_label single character string to label the gene set under investigation
 #' @param column_col vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.
 #' @param scale_alpha logical, whether to scale alpha values for bars, defaults to TRUE
+#' @param relative_sigs logical, whether signatures are considered relative, e.g. t-stats or logFC. Will carry out fgsea.
 #' @param ... given for compatibility, particularly for the adjustment of cex for various text labels
 #' @return Nothing, a plot is generated in the default output device
 #' @examples
@@ -335,6 +336,7 @@ plot_OneGs_MultSig <- function(sigmat,
                                gs_label = NULL,
                                column_col = NULL,
                                scale_alphas = TRUE,
+                               relative_sigs = FALSE,
                                ...) {
 
   omar <- par()$mar
@@ -347,10 +349,24 @@ plot_OneGs_MultSig <- function(sigmat,
   tmp <- .get_index(ges_mat = sigmat, geneset = geneset)
 
     # order statistics
-  pct_rank <- apply(sigmat, 2, function(i) rank(i, na.last = 'keep')/(length(!is.na(i))+1))
-  common <- intersect(rownames(sigmat), geneset)
-  avg_pct_rank <- colMeans(pct_rank[common, ], na.rm = TRUE)
-  ordx <- order(avg_pct_rank)
+  if(relative_sigs){
+
+    fres <- apply(sigmat, 2, function(i){
+      fgsea::fgsea(pathways = list(gs = gs), stats = i)
+    }) %>% bind_rows()
+
+    nes <- fres$NES
+    fdrs <- p.adjust(fres$pval, 'fdr')
+    ordx <- order(nes)
+
+  } else {
+    pct_rank <- apply(sigmat, 2, function(i) rank(i, na.last = 'keep')/(length(!is.na(i))+1))
+    common <- intersect(rownames(sigmat), geneset)
+    avg_pct_rank <- colMeans(pct_rank[common, ], na.rm = TRUE)
+    ordx <- order(avg_pct_rank)
+  }
+
+  # change of order
   tmp <- tmp[ordx]
 
   # x-axis intervals
@@ -362,34 +378,57 @@ plot_OneGs_MultSig <- function(sigmat,
     xax_itvl[length(xax_itvl)] <- length(x)
   }
 
-  layout(cbind(1,2), widths = c(1,6))
+  # Plot 1: Avg pct rank matrix OR NES/FDRs
 
-  # Plot 1: Avg pct rank matrix
+  if(relative_sigs){
 
-  # change order for plot
-  avg_pct_rank <- avg_pct_rank[ordx]
-  par(mar = c(2.1, 1.1, 2.1, 0.1))
-  plot(0,
-       type="n",
-       ylim=c(0, y),
-       axes=FALSE,
-       ylab="",
-       xlab="",
-       yaxs="i")
-  text(rep(1, y), seq(y)-.5, round(avg_pct_rank, 2), ...)
-  box()
-  grid(1, y, col="black", lty=1)
-  mtext(text = 'Average percent rank', side = 2, line = 0, ...)
+    layout(cbind(1,2,3), widths = c(1,1,6))
 
-  # # Plot 2: FDR
-  # if(is.null(padj)) padj <- p.adjust(vapply(tmp, function(i) i$pval, FUN.VALUE = numeric(1)), 'fdr')
-  # padj <- padj[ordx]
-  # par(mar = c(2.1, 0.05, 4.1, 1.1))
-  # plot(NA, xlim = c(0, 1), ylim = c(0, y),
-  #      type = 'n', axes = FALSE, ylab = "", xlab = "", yaxs = "i")
-  # text(rep(.5, y), seq(y)-.5, signif(padj, 2), col = 'black')
-  # grid(1, y, col="black", lty=1)
-  # mtext('FDR', at = .5, line = 1)
+    # change order for plot
+    nes <- nes[ordx]
+    fdrs <- fdrs[ordx]
+
+    mx <- max(abs(nes), na.rm = TRUE)
+    if(mx > 3) brks <- seq(-mx, mx, length.out = 101) else brks <- seq(-3, 3, length.out = 101)
+    par(mar = c(2.1, 1.1, 2.1, .05))
+    hcols <- c(color[2], 'white', color[1])
+    image(1, seq(y), t(nes), ylab="", xlab="",
+          col = colorRampPalette(hcols)(length(brks)-1),
+          breaks = brks,
+          axes = FALSE,
+          yaxs = "i")
+    text(rep(1, y), seq(y), round(nes, 2), col = 'black', ...)
+    box()
+    grid(1, y, col="black", lty=1)
+    mtext('NES', at = 1, line = 0, ...)
+
+    # Plot 2: FDR
+    par(mar = c(2.1, 0.05, 2.1, .05))
+    plot(NA, xlim = c(0, 1), ylim = c(0, y),
+         type = 'n', axes = FALSE, ylab = "", xlab = "", yaxs = "i")
+    text(rep(.5, y), seq(y)-.5, signif(fdrs, 2), col = 'black', ...)
+    grid(1, y, col="black", lty=1)
+    mtext('FDR', at = .5, line = 0, ...)
+
+  } else {
+
+    layout(cbind(1,2), widths = c(1,6))
+
+    # change order for plot
+    avg_pct_rank <- avg_pct_rank[ordx]
+    par(mar = c(2.1, 1.1, 2.1, 0.1))
+    plot(0,
+         type="n",
+         ylim=c(0, y),
+         axes=FALSE,
+         ylab="",
+         xlab="",
+         yaxs="i")
+    text(rep(1, y), seq(y)-.5, round(avg_pct_rank, 2), ...)
+    box()
+    grid(1, y, col="black", lty=1)
+    mtext(text = 'Average percent rank', side = 2, line = 0, ...)
+  }
 
   # Plot 3: targets in signature
   xlimit <- c(0, length(x)*(1+.15*max(nchar(colnames(sigmat)))/8))

@@ -12,6 +12,7 @@ plot_OneGs_MultSig(
   gs_label = NULL,
   column_col = NULL,
   scale_alphas = TRUE,
+  relative_sigs = FALSE,
   ...
 )
 }
@@ -27,6 +28,8 @@ plot_OneGs_MultSig(
 \item{gs_label}{single character string to label the gene set under investigation}
 
 \item{column_col}{vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.}
+
+\item{relative_sigs}{logical, whether signatures are considered relative, e.g. t-stats or logFC. Will carry out fgsea.}
 
 \item{...}{given for compatibility, particularly for the adjustment of cex for various text labels}
 
