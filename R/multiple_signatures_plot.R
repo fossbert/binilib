@@ -352,7 +352,7 @@ plot_OneGs_MultSig <- function(sigmat,
   if(relative_sigs){
 
     fres <- apply(sigmat, 2, function(i){
-      fgsea::fgsea(pathways = list(gs = gs), stats = i)
+      fgsea::fgsea(pathways = list(gs = geneset), stats = i)
     }) %>% bind_rows()
 
     nes <- fres$NES
