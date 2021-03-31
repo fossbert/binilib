@@ -236,7 +236,8 @@ plot_fgseaRes <- function(ges,
     xlimit <- c(0, length(x)*(1+.2*max(nchar(names(tmp)))/8))
 
     par(mar = c(2.1, 0.05, 2.1, 1.1))
-    plot(0, type="n",
+    plot(0,
+         type="n",
          ylim=c(0, y),
          xlim = xlimit,
          axes=FALSE,
@@ -318,6 +319,7 @@ plot_fgseaRes <- function(ges,
 #' @param column_col vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.
 #' @param scale_alpha logical, whether to scale alpha values for bars, defaults to TRUE
 #' @param relative_sigs logical, whether signatures are considered relative, e.g. t-stats or logFC. Will carry out fgsea.
+#' @param aREA_scores numeric vector that must match the number of columns from signature matrix, alternative to average rank metric
 #' @param ... given for compatibility, particularly for the adjustment of cex for various text labels
 #' @return Nothing, a plot is generated in the default output device
 #' @examples
@@ -337,6 +339,7 @@ plot_OneGs_MultSig <- function(sigmat,
                                column_col = NULL,
                                scale_alphas = TRUE,
                                relative_sigs = FALSE,
+                               aREA_scores = NULL,
                                ...) {
 
   omar <- par()$mar
@@ -360,10 +363,19 @@ plot_OneGs_MultSig <- function(sigmat,
     ordx <- order(nes)
 
   } else {
-    pct_rank <- apply(sigmat, 2, function(i) rank(i, na.last = 'keep')/(length(!is.na(i))+1))
-    common <- intersect(rownames(sigmat), geneset)
-    avg_pct_rank <- colMeans(pct_rank[common, ], na.rm = TRUE)
-    ordx <- order(avg_pct_rank)
+
+    if(!is.null(aREA_scores)){
+      if (length(aREA_scores) != ncol(sigmat)) stop('aREA scores need to match column number!')
+      ordx <- order(aREA_scores)
+      avg_score <- aREA_scores
+
+    } else {
+      score <- apply(sigmat, 2, function(i) rank(i, na.last = 'keep')/(length(!is.na(i))+1))
+      common <- intersect(rownames(sigmat), geneset)
+      avg_score <- colMeans(score[common, ], na.rm = TRUE)
+      ordx <- order(avg_score)
+    }
+
   }
 
   # change of order
@@ -417,7 +429,7 @@ plot_OneGs_MultSig <- function(sigmat,
     layout(cbind(1,2), widths = c(1,6))
 
     # change order for plot
-    avg_pct_rank <- avg_pct_rank[ordx]
+    avg_score <- avg_score[ordx]
     par(mar = c(2.1, 1.1, 2.1, 0.1))
     plot(0,
          type="n",
@@ -426,10 +438,14 @@ plot_OneGs_MultSig <- function(sigmat,
          ylab="",
          xlab="",
          yaxs="i")
-    text(rep(1, y), seq(y)-.5, round(avg_pct_rank, 2), ...)
+    text(rep(1, y), seq(y)-.5, round(avg_score, 2), ...)
     box()
     grid(1, y, col="black", lty=1)
-    mtext(text = 'Average percent rank', side = 2, line = 0, ...)
+    if(!is.null(aREA_scores)){
+      mtext(text = 'NES', side = 2, line = 0, ...)
+    } else{
+      mtext(text = 'Average percent rank', side = 2, line = 0, ...)
+    }
   }
 
   # Plot 3: targets in signature

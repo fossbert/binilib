@@ -209,3 +209,4 @@ gsea2T <- function(signature,
     class(gsea.obj) <- "gsea2"
     return(gsea.obj)
 }
+

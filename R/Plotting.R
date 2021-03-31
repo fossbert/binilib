@@ -170,20 +170,15 @@ split_violin <- function(x, s1, s2,
     }
 
     # define plotting environment, space below x depends on length of x labels
-    maxlength <- max(vapply(levels(s1), nchar, numeric(1)), na.rm = TRUE)
-    if (maxlength <= 10){
-        par(mar = c(4.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
-        cex_x <- 1
-    } else {
-        par(mar = c(5.1, 3.1, 2, 1), mgp = c(2, .7, 0), las = 1)
-        cex_x <- .8
-    }
-
-    plot(0, xaxt='n',
-         ylab = ylb,
-         xlab = '',
+    par(mar = c(2.1, 2.1, 0.1, 0.1))
+    plot(0,
+         type='n',
+         axes=FALSE,
+         ylab="",
+         xlab="",
          xlim = yr,
-         ylim = xr, ...)
+         ylim = xr,
+         ...)
 
     # side-by-side violin plots
     for (i in seq_along(l2)){
@@ -210,7 +205,8 @@ split_violin <- function(x, s1, s2,
         lines(x = c(at[i]+my2, at[i]), y = rep(mx2, 2))
 
         if (rug) {
-            yrug <- quantile(c(y1, y2), .25)
+           # yrug <- quantile(c(y1, y2), .25)
+            yrug <- .05
             orgs1 <- tmp[[1]][['original_x']]
             for (k in seq_along(orgs1)) {
                 lines(x = c(at[i]-yrug, at[i]), y = rep(orgs1[k], 2))
@@ -220,23 +216,23 @@ split_violin <- function(x, s1, s2,
                 lines(x = c(at[i]+yrug, at[i]), y = rep(orgs2[k], 2))
             }
         }
-
     }
 
     if (!is.null(rotate_xlabels)){
-        axis(side=1, at=at, tick = FALSE, labels = FALSE)
         text(x = at, y = par("usr")[3],
              labels = names(l2),
              srt = rotate_xlabels,
-             cex = cex_x,
              adj = c(1,1),
-             xpd = TRUE)
-    } else axis(side = 1,
-                at = at,
-                labels = names(l2),
-                cex = cex_x)
+             xpd = TRUE,
+             ...)
+    } else {
+        mtext(text = names(l2), side = 1, at = at, line = 0, ...)
+    }
 
-    legend(legpos, legend = levels(s2), pch = 15, col = cols)
+    axis(side = 2, tck = -0.01, mgp = c(1,.3,0), las = 1, ...)
+    mtext(text = ylb, side=2, line=1, ...)
+    box()
+    legend(legpos, legend = levels(s2), pch = 15, col = cols, ...)
 
     par(mar = omar, mgp = omgp, las = 0) # restore old settings
 

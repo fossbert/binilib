@@ -13,6 +13,7 @@ plot_OneGs_MultSig(
   column_col = NULL,
   scale_alphas = TRUE,
   relative_sigs = FALSE,
+  aREA_scores = NULL,
   ...
 )
 }
@@ -30,6 +31,8 @@ plot_OneGs_MultSig(
 \item{column_col}{vector of color ids (character, hex, etc) that must match the number of columns in the signature matrix.}
 
 \item{relative_sigs}{logical, whether signatures are considered relative, e.g. t-stats or logFC. Will carry out fgsea.}
+
+\item{aREA_scores}{numeric vector that must match the number of columns from signature matrix, alternative to average rank metric}
 
 \item{...}{given for compatibility, particularly for the adjustment of cex for various text labels}
 
