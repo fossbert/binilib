@@ -528,7 +528,7 @@ plot_OneGs_MultSig <- function(sigmat,
   # if there is a substantial difference between the last interval and the
   # length of the signature, go all the way
   diff_end <- length(ges) - xax_itvl[length(xax_itvl)]
-  if(diff_end > itvl){
+  if(diff_end > itvl/2){
     xax_itvl[length(xax_itvl)] <- length(ges)
   }
 
