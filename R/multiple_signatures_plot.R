@@ -28,13 +28,7 @@ plot_OneReg_MultSig <- function(sigmat,
     y <- ncol(sigmat)
 
     # x-axis intervals
-    xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
-    # if there is a substantial difference between the last interval and the
-    # length of the signature, go all the way
-    diff_end <- length(x) - xax_itvl[length(xax_itvl)]
-    if(diff_end > 1000){
-      xax_itvl[length(xax_itvl)] <- length(x)
-    }
+    xax_itvl <- .get_xintervals(x)
 
     layout(cbind(1,2,3), widths = c(1,1,6))
 
@@ -178,13 +172,7 @@ plot_fgseaRes <- function(ges,
     x <- seq(length(ges))
 
     # x-axis intervals
-    xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
-    # if there is a substantial difference between the last interval and the
-    # length of the signature, go all the way
-    diff_end <- length(x) - xax_itvl[length(xax_itvl)]
-    if(diff_end > 1000){
-      xax_itvl[length(xax_itvl)] <- length(x)
-    }
+    xax_itvl <- .get_xintervals(x)
 
     layout(cbind(1,2,3), widths = c(1,1,6))
 
@@ -382,13 +370,7 @@ plot_OneGs_MultSig <- function(sigmat,
   tmp <- tmp[ordx]
 
   # x-axis intervals
-  xax_itvl <- c(0, seq(floor(length(x)/4000))*4000)
-  # if there is a substantial difference between the last interval and the
-  # length of the signature, go all the way
-  diff_end <- length(x) - xax_itvl[length(xax_itvl)]
-  if(diff_end > 1000){
-    xax_itvl[length(xax_itvl)] <- length(x)
-  }
+  xax_itvl <- .get_xintervals(x)
 
   # Plot 1: Avg pct rank matrix OR NES/FDRs
 
@@ -528,4 +510,28 @@ plot_OneGs_MultSig <- function(sigmat,
     idx <- which(names(si) %in% geneset)
     return(idx)
     })
+}
+
+
+
+.get_xintervals <- function(ges){
+
+  options <- c(1000, 2000, 4000)
+
+  # test 1000, 2000 and 4000 intervals
+  ratios <- floor(length(ges)/options)
+  ratios[ratios<1] <- NA_real_
+  itvl <- options[which.min(ratios)]
+
+  xax_itvl <- c(0, seq(floor(length(ges)/itvl))*itvl)
+
+  # if there is a substantial difference between the last interval and the
+  # length of the signature, go all the way
+  diff_end <- length(ges) - xax_itvl[length(xax_itvl)]
+  if(diff_end > itvl){
+    xax_itvl[length(xax_itvl)] <- length(ges)
   }
+
+  return(xax_itvl)
+}
+
